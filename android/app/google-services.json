@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "165832304881",
+    "project_id": "amcs-delivery",
+    "storage_bucket": "amcs-delivery.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:165832304881:android:b66634e14623b27f18e150",
+        "android_client_info": {
+          "package_name": "ae.ajmanmarkets.delivery"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "165832304881-34repso0p16137v3kd6atlf3pktqnn41.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBHgWVuNuuuKD6m8Zvza2uj8uYePZZX0Ck"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "165832304881-34repso0p16137v3kd6atlf3pktqnn41.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
