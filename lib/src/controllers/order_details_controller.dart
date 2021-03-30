@@ -36,13 +36,17 @@ class OrderDetailsController extends ControllerMVC {
 
     final Stream<Order> stream = await getOrder(id);
     stream.listen((Order _order) {
-      int value = _order.productOrders
-          .fold<int>(0, (previousValue, element) => previousValue + double.parse(element.quantity).toInt());
-      int value2 =
-          _order.productOrders.fold<int>(0, (previousValue, element) => previousValue + (element.inBagQty ?? 0));
-      int value3 =
-          _order.productOrders.fold<int>(0, (previousValue, element) => previousValue + (element.outOfStockQnty ?? 0));
-      if (value <= value2 + value3 && value3 > 0) {
+      // int value = _order.productOrders.fold<int>(
+      //     0,
+      //     (previousValue, element) =>
+      //         previousValue + double.parse(element.quantity).toInt());
+      // int value2 = _order.productOrders.fold<int>(0,
+      //     (previousValue, element) => previousValue + (element.inBagQty ?? 0));
+      int value3 = _order.productOrders.fold<int>(
+          0,
+          (previousValue, element) =>
+              previousValue + (element.outOfStockQnty ?? 0));
+      if (/*value <= value2 + value3 && */ value3 > 0) {
         _order.orderStatus = OrderStatus.fromJSON({
           'id': '6',
           'status': 'Action_required',
@@ -64,7 +68,8 @@ class OrderDetailsController extends ControllerMVC {
   }
 
   Future<void> refreshOrder() async {
-    listenForOrder(id: order.id, message: S.of(context).order_refreshed_successfuly);
+    listenForOrder(
+        id: order.id, message: S.of(context).order_refreshed_successfuly);
   }
 
   void doPreparingOrder(Order _order) async {
@@ -166,12 +171,14 @@ class OrderDetailsController extends ControllerMVC {
     });
   }
 
-  Future getProductDetails({String orderId, String barcode, String message}) async {
+  Future getProductDetails(
+      {String orderId, String barcode, String message}) async {
     var productFromBarcode = await getProductFromBarcode(orderId, barcode);
     return productFromBarcode;
   }
 
-  Future addProductsToBag(List<ProductOrder> productOrdersList, String orderId) async {
+  Future addProductsToBag(
+      List<ProductOrder> productOrdersList, String orderId) async {
     List<Map> itemMapList = productOrdersList
         .map((e) => {
               'product_id': e.product.id,
@@ -184,11 +191,14 @@ class OrderDetailsController extends ControllerMVC {
     };
     int responseId = await addToBagAPI(reqMap);
     if (responseId == 0) {
-      print('${productOrdersList?.map((e) => e.toMap())?.toList()} added to bag');
+      print(
+          '${productOrdersList?.map((e) => e.toMap())?.toList()} added to bag');
       setState(() {
         productOrdersList.forEach((e) {
           // _con.order.productOrders.remove(e);
           e.inBagQty = double.parse(e.selectedQuantity).toInt();
+          e.outOfStockQnty = double.parse(e.quantity).toInt() -
+              double.parse(e.selectedQuantity).toInt();
           e.selectedQuantity = '0.0';
           //e.quantity = '0';
         });
@@ -199,7 +209,8 @@ class OrderDetailsController extends ControllerMVC {
       return true;
     } else {
       scaffoldKey?.currentState?.showSnackBar(SnackBar(
-        content: Text(responseId == 1 ? 'Already Exists' : 'Could not be added to bag!'),
+        content: Text(
+            responseId == 1 ? 'Already Exists' : 'Could not be added to bag!'),
       ));
       productOrdersList.forEach((e) {
         e.selectedQuantity = '0.0';
@@ -208,45 +219,50 @@ class OrderDetailsController extends ControllerMVC {
     }
   }
 
-  markedAsOutOfStock(List<ProductOrder> productOrdersList, String orderId) async {
-    List<Map> itemMapList = productOrdersList
-        .map((e) => {
-              'product_id': e.product.id,
-              'qty': e.selectedQuantity,
-            })
-        .toList();
-    Map<String, dynamic> reqMap = {
-      'order_id': orderId,
-      'item': itemMapList,
-    };
-    int responseId = await markAsOutOfStockAPI(reqMap);
-    if (responseId == 0) {
-      print('${productOrdersList?.map((e) => e.toMap())?.toList()} marked as out of stock');
-      setState(() {
-        productOrdersList.forEach((e) {
-          // _con.order.productOrders.remove(e);
-          e.outOfStockQnty = double.parse(e.selectedQuantity).toInt();
-          e.selectedQuantity = '0.0';
-          //e.quantity = '0';
-        });
-        // order.orderStatus = OrderStatus.fromJSON({
-        //   'id': '6',
-        //   'status': 'Action_required',
-        // });
-      });
-      scaffoldKey?.currentState?.showSnackBar(SnackBar(
-        content: Text('Marked as out of stock successfully!'),
-      ));
-      return true;
-    } else {
-      scaffoldKey?.currentState?.showSnackBar(SnackBar(
-        content: Text(responseId == 1 ? 'Already Exists' : 'Could not mark as out of stock!'),
-      ));
-      return false;
-    }
-  }
+  // markedAsOutOfStock(
+  //     List<ProductOrder> productOrdersList, String orderId) async {
+  //   List<Map> itemMapList = productOrdersList
+  //       .map((e) => {
+  //             'product_id': e.product.id,
+  //             'qty': e.selectedQuantity,
+  //           })
+  //       .toList();
+  //   Map<String, dynamic> reqMap = {
+  //     'order_id': orderId,
+  //     'item': itemMapList,
+  //   };
+  //   int responseId = await markAsOutOfStockAPI(reqMap);
+  //   if (responseId == 0) {
+  //     print(
+  //         '${productOrdersList?.map((e) => e.toMap())?.toList()} marked as out of stock');
+  //     setState(() {
+  //       productOrdersList.forEach((e) {
+  //         // _con.order.productOrders.remove(e);
+  //         e.outOfStockQnty = double.parse(e.selectedQuantity).toInt();
+  //         e.selectedQuantity = '0.0';
+  //         //e.quantity = '0';
+  //       });
+  //       // order.orderStatus = OrderStatus.fromJSON({
+  //       //   'id': '6',
+  //       //   'status': 'Action_required',
+  //       // });
+  //     });
+  //     scaffoldKey?.currentState?.showSnackBar(SnackBar(
+  //       content: Text('Marked as out of stock successfully!'),
+  //     ));
+  //     return true;
+  //   } else {
+  //     scaffoldKey?.currentState?.showSnackBar(SnackBar(
+  //       content: Text(responseId == 1
+  //           ? 'Already Exists'
+  //           : 'Could not mark as out of stock!'),
+  //     ));
+  //     return false;
+  //   }
+  // }
 
-  rejectProductOrdersPartial(List<ProductOrder> productOrdersList, String orderId, String driverId) async {
+  rejectProductOrdersPartial(List<ProductOrder> productOrdersList,
+      String orderId, String driverId) async {
     // List<Map> itemMapList = productOrdersList
     //     .map((e) => {
     //           'product_id': e.product.id,
@@ -311,7 +327,8 @@ class OrderDetailsController extends ControllerMVC {
       return true;
     } else {
       scaffoldKey?.currentState?.showSnackBar(SnackBar(
-        content: Text(responseId == 1 ? 'Already Exists' : 'Could not be rejected!'),
+        content:
+            Text(responseId == 1 ? 'Already Exists' : 'Could not be rejected!'),
       ));
       return false;
     }
@@ -328,20 +345,24 @@ class OrderDetailsController extends ControllerMVC {
     //updated to fix scanning issue
     // var existingProductOrder =
     //     this.order?.productOrders?.firstWhere((e) => e.id == _productOrder.product.id, orElse: () => null);
-    var existingProductOrderIndex = order?.productOrders?.indexWhere((e) => e.id == _productOrder.product.id);
+    var existingProductOrderIndex = order?.productOrders
+        ?.indexWhere((e) => e.id == _productOrder.product.id);
     if (existingProductOrderIndex != -1) {
       setState(() {
         //existingProductOrder.quantity
-        order.productOrders[existingProductOrderIndex].selectedQuantity = Helper.stringToStringFixed(
-            /*(Helper.toDouble(existingProductOrder.quantity) + */ (Helper.toDouble(selectedQuantity.toString()))
-                .toString(),
-            2);
+        order.productOrders[existingProductOrderIndex].selectedQuantity =
+            Helper.stringToStringFixed(
+                /*(Helper.toDouble(existingProductOrder.quantity) + */ (Helper
+                        .toDouble(selectedQuantity.toString()))
+                    .toString(),
+                2);
         // existingProductOrder.isScanned = true;
         order.productOrders[existingProductOrderIndex].isScanned = true;
       });
       _productOrder.selectedQuantity = selectedQuantity.toString();
       // await addProductsToBag(order.productOrders, order.id);
-      await addProductsToBag([order.productOrders[existingProductOrderIndex]], order.id);
+      await addProductsToBag(
+          [order.productOrders[existingProductOrderIndex]], order.id);
       // scaffoldKey?.currentState?.showSnackBar(SnackBar(
       //   content: Text('Product updated!'),
       // ));
@@ -375,7 +396,7 @@ class OrderDetailsController extends ControllerMVC {
   }
 
   bool confirmProductsQuantity(List<ProductOrder> list) {
-    if (list.any((e) => Helper.toDouble(e.selectedQuantity) <= 0)) {
+    if (list.any((e) => Helper.toDouble(e.selectedQuantity) < 0)) {
       scaffoldKey?.currentState?.showSnackBar(SnackBar(
         content: Text('Not enough quantity to add to bag!'),
       ));
@@ -408,9 +429,11 @@ class OrderDetailsController extends ControllerMVC {
     ));
   }
 
-  bool isPickerStatus() => Helper.pickerStatuses.contains(order?.orderStatus?.id);
+  bool isPickerStatus() =>
+      Helper.pickerStatuses.contains(order?.orderStatus?.id);
 
-  bool isDelivererStatus() => Helper.delivererStatuses.contains(order?.orderStatus?.id);
+  bool isDelivererStatus() =>
+      Helper.delivererStatuses.contains(order?.orderStatus?.id);
 
   Future submitActoinRequired(String orderId, String actionText) async {
     int responseId = await addActionRequired(orderId, actionText);
@@ -421,7 +444,8 @@ class OrderDetailsController extends ControllerMVC {
       return true;
     } else {
       scaffoldKey?.currentState?.showSnackBar(SnackBar(
-        content: Text(responseId == 1 ? 'Already Exists' : 'Could not be added!'),
+        content:
+            Text(responseId == 1 ? 'Already Exists' : 'Could not be added!'),
       ));
       return false;
     }

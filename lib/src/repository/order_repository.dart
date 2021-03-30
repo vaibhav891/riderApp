@@ -20,7 +20,8 @@ Future<Stream<Order>> getOrders() async {
   User _user = userRepo.currentUser.value;
 
   _queryParams['api_token'] = _user.apiToken;
-  _queryParams['with'] = 'driver;productOrders;productOrders.product;orderStatus;deliveryAddress;payment';
+  _queryParams['with'] =
+      'driver;productOrders;productOrders.product;orderStatus;deliveryAddress;payment';
   _queryParams['search'] = 'driver.id:${_user.id};delivery_address_id:null';
   // _queryParams['searchFields'] = 'driver.id:=;order_status_id:<>;delivery_address_id:<>';
   // _queryParams['searchJoin'] = 'and';
@@ -54,7 +55,8 @@ Future<Stream<Order>> getOrders1() async {
   User _user = userRepo.currentUser.value;
 
   _queryParams['api_token'] = _user.apiToken;
-  _queryParams['with'] = 'driver;productOrders;productOrders.product;orderStatus;deliveryAddress;payment';
+  _queryParams['with'] =
+      'driver;productOrders;productOrders.product;orderStatus;deliveryAddress;payment';
   _queryParams['search'] = 'driver.id:${_user.id};delivery_address_id:null';
   // _queryParams['searchFields'] = 'driver.id:=;order_status_id:<>;delivery_address_id:<>';
   // _queryParams['searchJoin'] = 'and';
@@ -114,14 +116,16 @@ Future<Stream<Order>> getReturnOrders() async {
   }
 }
 
-Future<Stream<Order>> getNearOrders(Address myAddress, Address areaAddress) async {
+Future<Stream<Order>> getNearOrders(
+    Address myAddress, Address areaAddress) async {
   Uri uri = Helper.getUri('api/orders');
   Map<String, dynamic> _queryParams = {};
   User _user = userRepo.currentUser.value;
 
   _queryParams['api_token'] = _user.apiToken;
   _queryParams['limit'] = '6';
-  _queryParams['with'] = 'driver;productOrders;productOrders.product;orderStatus;deliveryAddress;payment';
+  _queryParams['with'] =
+      'driver;productOrders;productOrders.product;orderStatus;deliveryAddress;payment';
   _queryParams['search'] = 'driver.id:${_user.id};delivery_address_id:null';
   // _queryParams['searchFields'] = 'driver.id:=;delivery_address_id:<>';
   // _queryParams['searchJoin'] = 'and';
@@ -154,7 +158,8 @@ Future<Stream<Order>> getOrdersHistory() async {
   User _user = userRepo.currentUser.value;
 
   _queryParams['api_token'] = _user.apiToken;
-  _queryParams['with'] = 'driver;productOrders;productOrders.product;orderStatus;deliveryAddress;payment';
+  _queryParams['with'] =
+      'driver;productOrders;productOrders.product;orderStatus;deliveryAddress;payment';
   _queryParams['search'] = 'driver.id:${_user.id};delivery_address_id:null';
   //_queryParams['search'] = 'driver.id:${_user.id};order_status_id:$orderStatusId;delivery_address_id:null';
   // _queryParams['searchFields'] = 'driver.id:=;order_status_id:=;delivery_address_id:<>';
@@ -211,7 +216,8 @@ Future<Stream<Order>> getRecentOrders() async {
 
   _queryParams['api_token'] = _user.apiToken;
   _queryParams['limit'] = '4';
-  _queryParams['with'] = 'driver;productOrders;productOrders.product;orderStatus;deliveryAddress;payment';
+  _queryParams['with'] =
+      'driver;productOrders;productOrders.product;orderStatus;deliveryAddress;payment';
   // _queryParams['with'] = 'driver;orderStatus';
   // _queryParams['search'] = 'driver.id:${_user.id};delivery_address_id:null';
   // _queryParams['searchFields'] = 'driver.id:=;delivery_address_id:<>';
@@ -245,7 +251,8 @@ Future<Stream<OrderStatus>> getOrderStatus() async {
     return new Stream.value(new OrderStatus());
   }
   final String _apiToken = 'api_token=${_user.apiToken}';
-  final String url = '${GlobalConfiguration().getString('api_base_url')}order_statuses?$_apiToken';
+  final String url =
+      '${GlobalConfiguration().getString('api_base_url')}order_statuses?$_apiToken';
 
   final client = new http.Client();
   final streamedRest = await client.send(http.Request('get', Uri.parse(url)));
@@ -266,7 +273,8 @@ Future<Order> deliveredOrder(Order order) async {
     return new Order();
   }
   final String _apiToken = 'api_token=${_user.apiToken}';
-  final String url = '${GlobalConfiguration().getString('api_base_url')}orders/${order.id}?$_apiToken';
+  final String url =
+      '${GlobalConfiguration().getString('api_base_url')}orders/${order.id}?$_apiToken';
   final client = new http.Client();
   final response = await client.put(
     url,
@@ -283,7 +291,8 @@ Future<Order> PreparingOrder(Order order) async {
     return new Order();
   }
   final String _apiToken = 'api_token=${_user.apiToken}';
-  final String url = '${GlobalConfiguration().getString('api_base_url')}orders/${order.id}?$_apiToken';
+  final String url =
+      '${GlobalConfiguration().getString('api_base_url')}orders/${order.id}?$_apiToken';
   final client = new http.Client();
   final response = await client.put(
     url,
@@ -300,7 +309,8 @@ Future<Order> ActionOrder(Order order) async {
     return new Order();
   }
   final String _apiToken = 'api_token=${_user.apiToken}';
-  final String url = '${GlobalConfiguration().getString('api_base_url')}orders/${order.id}?$_apiToken';
+  final String url =
+      '${GlobalConfiguration().getString('api_base_url')}orders/${order.id}?$_apiToken';
   final client = new http.Client();
   final response = await client.put(
     url,
@@ -316,7 +326,8 @@ Future collectedOrder(Order order) async {
     return;
   }
   final String _apiToken = 'api_token=${_user.apiToken}';
-  final String url = 'http://online.ajmanmarkets.ae/api/update-returnstatus.php';
+  final String url =
+      'http://online.ajmanmarkets.ae/api/update-returnstatus.php';
   final client = new http.Client();
   final response = await client.post(
     url,
@@ -335,7 +346,8 @@ Future notCollectedOrder(Order order) async {
     return;
   }
   final String _apiToken = 'api_token=${_user.apiToken}';
-  final String url = 'http://online.ajmanmarkets.ae/api/update-returnstatus.php';
+  final String url =
+      'http://online.ajmanmarkets.ae/api/update-returnstatus.php';
   final client = new http.Client();
   final response = await client.post(
     url,
@@ -355,7 +367,8 @@ Future<Order> ReadyOrder(Order order) async {
     return new Order();
   }
   final String _apiToken = 'api_token=${_user.apiToken}';
-  final String url = '${GlobalConfiguration().getString('api_base_url')}orders/${order.id}?$_apiToken';
+  final String url =
+      '${GlobalConfiguration().getString('api_base_url')}orders/${order.id}?$_apiToken';
   final client = new http.Client();
   final response = await client.put(
     url,
@@ -372,7 +385,8 @@ Future<Order> OnthewayOrder(Order order) async {
     return new Order();
   }
   final String _apiToken = 'api_token=${_user.apiToken}';
-  final String url = '${GlobalConfiguration().getString('api_base_url')}orders/${order.id}?$_apiToken';
+  final String url =
+      '${GlobalConfiguration().getString('api_base_url')}orders/${order.id}?$_apiToken';
   final client = new http.Client();
   final response = await client.put(
     url,
@@ -414,27 +428,27 @@ Future getProductFromBarcode(String orderId, String barcode) async {
   }
 }
 
-Future<int> markAsOutOfStockAPI(Map<String, dynamic> reqMap) async {
-  Uri uri = Uri.parse('http://online.ajmanmarkets.ae/api/stock.php');
+// Future<int> markAsOutOfStockAPI(Map<String, dynamic> reqMap) async {
+//   Uri uri = Uri.parse('http://online.ajmanmarkets.ae/api/stock.php');
 
-  try {
-    final client = new http.Client();
-    final response = await client.post(
-      uri,
-      headers: {HttpHeaders.contentTypeHeader: 'application/json'},
-      body: json.encode(reqMap),
-    );
-    if (response.body.contains('Success'))
-      return 0;
-    else if (response.body.contains('Already exists'))
-      return 1;
-    else
-      return 2;
-  } catch (e) {
-    print(CustomTrace(StackTrace.current, message: uri.toString()).toString());
-    return -1;
-  }
-}
+//   try {
+//     final client = new http.Client();
+//     final response = await client.post(
+//       uri,
+//       headers: {HttpHeaders.contentTypeHeader: 'application/json'},
+//       body: json.encode(reqMap),
+//     );
+//     if (response.body.contains('Success'))
+//       return 0;
+//     else if (response.body.contains('Already exists'))
+//       return 1;
+//     else
+//       return 2;
+//   } catch (e) {
+//     print(CustomTrace(StackTrace.current, message: uri.toString()).toString());
+//     return -1;
+//   }
+// }
 
 Future<int> addToBagAPI(Map<String, dynamic> reqMap) async {
   Uri uri = Uri.parse('http://online.ajmanmarkets.ae/api/addtobag.php');
@@ -459,8 +473,10 @@ Future<int> addToBagAPI(Map<String, dynamic> reqMap) async {
   }
 }
 
-Future<dynamic> rejectProductOrdersPartialAPI(Map<String, dynamic> reqMap) async {
-  Uri uri = Uri.parse('https://online.ajmanmarkets.ae/api/partialordercancel.php');
+Future<dynamic> rejectProductOrdersPartialAPI(
+    Map<String, dynamic> reqMap) async {
+  Uri uri =
+      Uri.parse('https://online.ajmanmarkets.ae/api/partialordercancel.php');
   print(json.encode(reqMap));
   try {
     final client = new http.Client();

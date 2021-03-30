@@ -37,12 +37,13 @@ class OrderWidget extends StatefulWidget {
   }
 }
 
-class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderStateMixin {
+class _OrderWidgetState extends StateMVC<OrderWidget>
+    with SingleTickerProviderStateMixin {
   bool _switchToProducts = true;
 
   OrderDetailsController _con;
   List<String> selectedProductOrders = [];
-  static const int minSelectedQuantity = 1;
+  static const int minSelectedQuantity = 0;
   ProductOrderFilter _filterDropdownValue = ProductOrderFilter.nonScanned;
   bool isView = true;
   bool workSelected = false;
@@ -68,21 +69,29 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
     switch (_filterDropdownValue) {
       case ProductOrderFilter.nonScanned:
         return filteredProductOrders
-            .where((e) => ((e.inBagQty ?? 0) + (e.outOfStockQnty ?? 0) < double.parse(e.quantity).toInt()))
+            .where((e) => ((e.inBagQty ?? 0) + (e.outOfStockQnty ?? 0) <
+                double.parse(e.quantity).toInt()))
             .toList()
-              ..sort((a, b) => (a.categoryId ?? 0).compareTo(b.categoryId ?? 0));
+              ..sort(
+                  (a, b) => (a.categoryId ?? 0).compareTo(b.categoryId ?? 0));
 
       case ProductOrderFilter.outOfStock:
-        return filteredProductOrders.where((e) => (e.outOfStockQnty ?? 0) > 0).toList()
-          ..sort((a, b) => (a.categoryId ?? 0).compareTo(b.categoryId ?? 0));
+        return filteredProductOrders
+            .where((e) => (e.outOfStockQnty ?? 0) > 0)
+            .toList()
+              ..sort(
+                  (a, b) => (a.categoryId ?? 0).compareTo(b.categoryId ?? 0));
       case ProductOrderFilter.all:
-        return filteredProductOrders..sort((a, b) => (a.categoryId ?? 0).compareTo(b.categoryId ?? 0));
+        return filteredProductOrders
+          ..sort((a, b) => (a.categoryId ?? 0).compareTo(b.categoryId ?? 0));
       case ProductOrderFilter.scanned:
       default:
         return filteredProductOrders
-            .where((e) => ((e.inBagQty ?? 0) + (e.outOfStockQnty ?? 0) >= double.parse(e.quantity).toInt()))
+            .where((e) => ((e.inBagQty ?? 0) + (e.outOfStockQnty ?? 0) >=
+                double.parse(e.quantity).toInt()))
             .toList()
-              ..sort((a, b) => (a.categoryId ?? 0).compareTo(b.categoryId ?? 0));
+              ..sort(
+                  (a, b) => (a.categoryId ?? 0).compareTo(b.categoryId ?? 0));
     }
   }
 
@@ -93,7 +102,9 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
     _con.listenForOrder(id: widget.routeArgument.id);
     pdfFile = _con.getInvoicePdf(widget.routeArgument.id);
     _submitted = widget.routeArgument.param[1] == 1;
-    _filterDropdownValue = currentUser.value.role_id == 'driver' ? ProductOrderFilter.all : _filterDropdownValue;
+    _filterDropdownValue = currentUser.value.role_id == 'driver'
+        ? ProductOrderFilter.all
+        : _filterDropdownValue;
   }
 
   void dispose() {
@@ -121,10 +132,14 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
               padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
               decoration: BoxDecoration(
                   color: Theme.of(context).primaryColor,
-                  borderRadius: BorderRadius.only(topRight: Radius.circular(20), topLeft: Radius.circular(20)),
+                  borderRadius: BorderRadius.only(
+                      topRight: Radius.circular(20),
+                      topLeft: Radius.circular(20)),
                   boxShadow: [
                     BoxShadow(
-                        color: Theme.of(context).focusColor.withOpacity(0.15), offset: Offset(0, -2), blurRadius: 5.0)
+                        color: Theme.of(context).focusColor.withOpacity(0.15),
+                        offset: Offset(0, -2),
+                        blurRadius: 5.0)
                   ]),
               child: CustomRoundButton(
                 text: 'Start picking',
@@ -143,7 +158,10 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
   }
 
   List<ProductOrder> getSelectedProductOrders() {
-    return selectedProductOrders.map((e) => _con.order.productOrders.firstWhere((element) => element.id == e)).toList();
+    return selectedProductOrders
+        .map((e) =>
+            _con.order.productOrders.firstWhere((element) => element.id == e))
+        .toList();
   }
 
   Future _onScanPressed() async {
@@ -169,7 +187,8 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
     print('barcode: $barcode, orderId: $orderId');
     var _customDialogHandler = CustomDialogHandler();
     _customDialogHandler.show(context);
-    List productFromBarcodeList = await _con.getProductDetails(orderId: orderId ?? '', barcode: barcode ?? '');
+    List productFromBarcodeList = await _con.getProductDetails(
+        orderId: orderId ?? '', barcode: barcode ?? '');
     _customDialogHandler.hide();
     var productFromBarcode;
     if (productFromBarcodeList != null && productFromBarcodeList.length > 0) {
@@ -225,12 +244,18 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [Text('Title'), Text(productOrder?.name ?? 'none')],
+                                children: [
+                                  Text('Title'),
+                                  Text(productOrder?.name ?? 'none')
+                                ],
                               ),
                             ),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [Text('Quantity'), Text(productOrder?.quantity ?? '')],
+                              children: [
+                                Text('Quantity'),
+                                Text(productOrder?.quantity ?? '')
+                              ],
                             ),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.center,
@@ -253,8 +278,10 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
                                           ),
                                           onTap: () {
                                             print('up');
-                                            final maxQuantity = Helper.toDouble(productOrder?.quantity);
-                                            if (selectedQuantity < maxQuantity.toInt()) {
+                                            final maxQuantity = Helper.toDouble(
+                                                productOrder?.quantity);
+                                            if (selectedQuantity <
+                                                maxQuantity.toInt()) {
                                               stateSetter(() {
                                                 ++selectedQuantity;
                                               });
@@ -268,7 +295,8 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
                                           ),
                                           onTap: () {
                                             print('down');
-                                            if (selectedQuantity > minSelectedQuantity) {
+                                            if (selectedQuantity >
+                                                minSelectedQuantity) {
                                               stateSetter(() {
                                                 --selectedQuantity;
                                               });
@@ -287,7 +315,8 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
                       ),
                       CustomRoundButton(
                           onPressed: () {
-                            _con.addProductOrder(productOrder, selectedQuantity);
+                            _con.addProductOrder(
+                                productOrder, selectedQuantity);
                             Navigator.pop(dialogContext, selectedQuantity);
                           },
                           text: 'Submit'),
@@ -326,7 +355,8 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
                     if (_textController.text.isEmpty) {
                       return _con.contentEmptySnackbar();
                     }
-                    _con.submitActoinRequired(_con.order.id, _textController.text);
+                    _con.submitActoinRequired(
+                        _con.order.id, _textController.text);
                     stateSetter(() {
                       _submitted = true;
                     });
@@ -354,26 +384,20 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
     }
     final CustomDialogHandler _customDialogHandler = CustomDialogHandler();
     _customDialogHandler.show(context);
-    await _con.addProductsToBag(getSelectedProductOrders()?.map((e) => e)?.toList(), orderId);
+    await _con.addProductsToBag(
+        getSelectedProductOrders()?.map((e) => e)?.toList(), orderId);
     _customDialogHandler.hide();
-    return;
-  }
-
-  void markAsOutOfStock(String orderId) async {
-    if (!_con.confirmProductsSelection(getSelectedProductOrders())) {
-      return;
-    }
-    final CustomDialogHandler _customDialogHandler = CustomDialogHandler();
-    _customDialogHandler.show(context);
-    await _con.markedAsOutOfStock(getSelectedProductOrders()?.map((e) => e)?.toList(), orderId);
-    _customDialogHandler.hide();
-    int value = _con.order.productOrders
-        .fold<int>(0, (previousValue, element) => previousValue + double.parse(element.quantity).toInt());
-    int value2 =
-        _con.order.productOrders.fold<int>(0, (previousValue, element) => previousValue + (element.inBagQty ?? 0));
-    int value3 = _con.order.productOrders
-        .fold<int>(0, (previousValue, element) => previousValue + (element.outOfStockQnty ?? 0));
-    if (value <= value2 + value3 && value3 > 0) {
+    // int value = _con.order.productOrders.fold<int>(
+    //     0,
+    //     (previousValue, element) =>
+    //         previousValue + double.parse(element.quantity).toInt());
+    // int value2 = _con.order.productOrders.fold<int>(
+    //     0, (previousValue, element) => previousValue + (element.inBagQty ?? 0));
+    int value3 = _con.order.productOrders.fold<int>(
+        0,
+        (previousValue, element) =>
+            previousValue + (element.outOfStockQnty ?? 0));
+    if (/*value <= value2 + value3 && */ value3 > 0) {
       setState(() {
         _con.order.orderStatus = OrderStatus.fromJSON({
           'id': '6',
@@ -381,9 +405,39 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
         });
       });
     }
-
     return;
   }
+
+  // void markAsOutOfStock(String orderId) async {
+  //   if (!_con.confirmProductsSelection(getSelectedProductOrders())) {
+  //     return;
+  //   }
+  //   final CustomDialogHandler _customDialogHandler = CustomDialogHandler();
+  //   _customDialogHandler.show(context);
+  //   await _con.markedAsOutOfStock(
+  //       getSelectedProductOrders()?.map((e) => e)?.toList(), orderId);
+  //   _customDialogHandler.hide();
+  //   int value = _con.order.productOrders.fold<int>(
+  //       0,
+  //       (previousValue, element) =>
+  //           previousValue + double.parse(element.quantity).toInt());
+  //   int value2 = _con.order.productOrders.fold<int>(
+  //       0, (previousValue, element) => previousValue + (element.inBagQty ?? 0));
+  //   int value3 = _con.order.productOrders.fold<int>(
+  //       0,
+  //       (previousValue, element) =>
+  //           previousValue + (element.outOfStockQnty ?? 0));
+  //   if (value <= value2 + value3 && value3 > 0) {
+  //     setState(() {
+  //       _con.order.orderStatus = OrderStatus.fromJSON({
+  //         'id': '6',
+  //         'status': 'Action_required',
+  //       });
+  //     });
+  //   }
+
+  //   return;
+  // }
 
   void rejectProductOrdersPartial(String orderId, String driverId) async {
     if (!_con.confirmProductsSelection(getSelectedProductOrders())) {
@@ -391,7 +445,8 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
     }
     final CustomDialogHandler _customDialogHandler = CustomDialogHandler();
     _customDialogHandler.show(context);
-    await _con.rejectProductOrdersPartial(getSelectedProductOrders()?.map((e) => e)?.toList(), orderId, driverId);
+    await _con.rejectProductOrdersPartial(
+        getSelectedProductOrders()?.map((e) => e)?.toList(), orderId, driverId);
     _customDialogHandler.hide();
     return;
   }
@@ -435,7 +490,8 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
                   if (_controller.isNotEmpty) {
                     var byteData = await _controller.toPngBytes();
                     var bs64 = base64Encode(byteData);
-                    var uri = Uri.parse("http://ajmanmarkets.apntbs.com/api/signature.php");
+                    var uri = Uri.parse(
+                        "http://ajmanmarkets.apntbs.com/api/signature.php");
                     //var response =
                     await http.post(uri, body: {
                       'image': bs64,
@@ -476,7 +532,8 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
         builder: (context) {
           return AlertDialog(
             title: Text('Confirm'),
-            content: Text('Are you sure you want to assign this order to yourself?'),
+            content:
+                Text('Are you sure you want to assign this order to yourself?'),
             actions: <Widget>[
               // usually buttons at the bottom of the dialog
               FlatButton(
@@ -519,7 +576,8 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
                   title: Text("Full reject"),
                   onTap: () async {
                     print('full reject pressed');
-                    await rejectProductOrdersFull(_con.order.id, _con.order.driverId);
+                    await rejectProductOrdersFull(
+                        _con.order.id, _con.order.driverId);
                     Navigator.of(context).pop();
                   },
                 ),
@@ -635,17 +693,23 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
             padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
             decoration: BoxDecoration(
                 color: Theme.of(context).primaryColor,
-                borderRadius: BorderRadius.only(topRight: Radius.circular(20), topLeft: Radius.circular(20)),
+                borderRadius: BorderRadius.only(
+                    topRight: Radius.circular(20),
+                    topLeft: Radius.circular(20)),
                 boxShadow: [
                   BoxShadow(
-                      color: Theme.of(context).focusColor.withOpacity(0.15), offset: Offset(0, -2), blurRadius: 5.0)
+                      color: Theme.of(context).focusColor.withOpacity(0.15),
+                      offset: Offset(0, -2),
+                      blurRadius: 5.0)
                 ]),
             child: SizedBox(
               width: MediaQuery.of(context).size.width - 40,
             ),
           )
         : Container(
-            height: _con.isPickerStatus() || _con.order.orderStatus.id == '6' || _con.order.orderStatus.id == '4'
+            height: _con.isPickerStatus() ||
+                    _con.order.orderStatus.id == '6' ||
+                    _con.order.orderStatus.id == '4'
                 ? 80 //120
                 : _con.isDelivererStatus()
                     ? 120
@@ -655,10 +719,14 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
             padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
             decoration: BoxDecoration(
                 color: Theme.of(context).primaryColor,
-                borderRadius: BorderRadius.only(topRight: Radius.circular(20), topLeft: Radius.circular(20)),
+                borderRadius: BorderRadius.only(
+                    topRight: Radius.circular(20),
+                    topLeft: Radius.circular(20)),
                 boxShadow: [
                   BoxShadow(
-                      color: Theme.of(context).focusColor.withOpacity(0.15), offset: Offset(0, -2), blurRadius: 5.0)
+                      color: Theme.of(context).focusColor.withOpacity(0.15),
+                      offset: Offset(0, -2),
+                      blurRadius: 5.0)
                 ]),
             child: SizedBox(
               width: MediaQuery.of(context).size.width - 40,
@@ -689,15 +757,18 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
                           //   ],
                           // ),
                           )
-                      : currentUser.value.role_id == 'driver' && _con.isDelivererStatus()
+                      : currentUser.value.role_id == 'driver' &&
+                              _con.isDelivererStatus()
                           ? Container(
-                              margin: EdgeInsets.only(left: 8.0, right: 8.0, bottom: 4.0),
+                              margin: EdgeInsets.only(
+                                  left: 8.0, right: 8.0, bottom: 4.0),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   CustomRoundButton(
                                     text: 'Delivered',
-                                    width: MediaQuery.of(context).size.width * 0.4,
+                                    width:
+                                        MediaQuery.of(context).size.width * 0.4,
                                     onPressed: () {
                                       deliveredPressed();
                                     },
@@ -706,7 +777,8 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
                                   if (!partialReject)
                                     CustomRoundButton(
                                       text: 'Rejected',
-                                      width: MediaQuery.of(context).size.width * 0.4,
+                                      width: MediaQuery.of(context).size.width *
+                                          0.4,
                                       onPressed: () {
                                         rejectedPressed();
                                       },
@@ -719,7 +791,9 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
                   _con.order.orderStatus.id == '1'
                       ? CustomRoundButton(
                           text: "Start Picking",
-                          onPressed: () => workSelected ? _con.doPreparingOrder(_con.order) : preparingPressed(),
+                          onPressed: () => workSelected
+                              ? _con.doPreparingOrder(_con.order)
+                              : preparingPressed(),
                           width: MediaQuery.of(context).size.width * 0.85,
                         )
                       : SizedBox(height: 0),
@@ -733,7 +807,8 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
                           width: MediaQuery.of(context).size.width * 0.85,
                         )
                       : SizedBox(height: 0),
-                  _con.order.orderStatus.id == '3' && currentUser.value.role_id == 'driver'
+                  _con.order.orderStatus.id == '3' &&
+                          currentUser.value.role_id == 'driver'
                       ? CustomRoundButton(
                           text: 'On the way',
                           onPressed: () {
@@ -751,7 +826,8 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
                   //         width: MediaQuery.of(context).size.width * 0.85,
                   //       )
                   //     : SizedBox(height: 0),
-                  _con.order.orderStatus.id == '6' //&& currentUser.value.role_id == 'picker'
+                  _con.order.orderStatus.id ==
+                          '6' //&& currentUser.value.role_id == 'picker'
                       ? CustomRoundButton(
                           text: 'Action Required',
                           width: MediaQuery.of(context).size.width * 0.85,
@@ -764,7 +840,8 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
                                 },
                         )
                       : SizedBox(height: 0),
-                  _con.order.orderStatus.id == '20' //&& currentUser.value.role_id == 'picker'
+                  _con.order.orderStatus.id ==
+                          '20' //&& currentUser.value.role_id == 'picker'
                       ? Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
@@ -820,7 +897,10 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
       centerTitle: true,
       title: Text(
         S.of(context).order_details,
-        style: Theme.of(context).textTheme.headline6.merge(TextStyle(letterSpacing: 1.3)),
+        style: Theme.of(context)
+            .textTheme
+            .headline6
+            .merge(TextStyle(letterSpacing: 1.3)),
       ),
       actions: <Widget>[
         currentUser.value.role_id == 'picker'
@@ -839,7 +919,9 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
           onPressed: () {
             showModalBottomSheet(
               isScrollControlled: true,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(12))),
+              shape: RoundedRectangleBorder(
+                  borderRadius:
+                      BorderRadius.vertical(top: Radius.circular(12))),
               context: context,
               builder: (context) {
                 return FutureBuilder<File>(
@@ -848,15 +930,18 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
                       if (snapshot.hasError) {
                         return Container(
                             height: MediaQuery.of(context).size.height * 0.9,
-                            child: Center(child: Text('Could not generate invoice at this time')));
+                            child: Center(
+                                child: Text(
+                                    'Could not generate invoice at this time')));
                       }
                       if (snapshot.hasData)
                         return Container(
                           height: MediaQuery.of(context).size.height * 0.9,
-                          decoration: BoxDecoration(borderRadius: BorderRadius.circular(40)),
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(40)),
                           child: PdfPreview(
-                            build: (format) =>
-                                snapshot.data.readAsBytes(), // _generatePdf(format, "this is test page"),
+                            build: (format) => snapshot.data
+                                .readAsBytes(), // _generatePdf(format, "this is test page"),
                           ),
                         );
                     });
@@ -865,7 +950,9 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
           },
           icon: Icon(Icons.print_rounded),
         ),
-        new ShoppingCartButtonWidget(iconColor: Theme.of(context).hintColor, labelColor: Theme.of(context).accentColor),
+        new ShoppingCartButtonWidget(
+            iconColor: Theme.of(context).hintColor,
+            labelColor: Theme.of(context).accentColor),
       ],
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       expandedHeight: MediaQuery.of(context).size.height, // * 0.9,
@@ -878,7 +965,10 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
           decoration: BoxDecoration(
             color: Theme.of(context).primaryColor.withOpacity(0.9),
             boxShadow: [
-              BoxShadow(color: Theme.of(context).focusColor.withOpacity(0.1), blurRadius: 5, offset: Offset(0, 2)),
+              BoxShadow(
+                  color: Theme.of(context).focusColor.withOpacity(0.1),
+                  blurRadius: 5,
+                  offset: Offset(0, 2)),
             ],
           ),
           child: SingleChildScrollView(
@@ -897,7 +987,8 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
                                 Text(
-                                  S.of(context).order_id + ": #${_con.order.increment_id}",
+                                  S.of(context).order_id +
+                                      ": #${_con.order.increment_id}",
                                   overflow: TextOverflow.ellipsis,
                                   maxLines: 2,
                                   style: Theme.of(context).textTheme.headline4,
@@ -909,7 +1000,8 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
                                         getNextStatus() ?? '',
                                         overflow: TextOverflow.ellipsis,
                                         maxLines: 2,
-                                        style: Theme.of(context).textTheme.caption,
+                                        style:
+                                            Theme.of(context).textTheme.caption,
                                       )
                                     : Container(),
                                 Text(
@@ -927,16 +1019,26 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
                             mainAxisAlignment: MainAxisAlignment.start,
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: <Widget>[
-                              Helper.getPrice(Helper.getTotalOrdersPrice(_con.order), context,
-                                  style: Theme.of(context).textTheme.headline4.copyWith(fontSize: 16)),
+                              Helper.getPrice(
+                                  Helper.getTotalOrdersPrice(_con.order),
+                                  context,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headline4
+                                      .copyWith(fontSize: 16)),
                               Text(
-                                _con.order.payment?.method ?? S.of(context).cash_on_delivery,
+                                _con.order.payment?.method ??
+                                    S.of(context).cash_on_delivery,
                                 overflow: TextOverflow.ellipsis,
                                 maxLines: 2,
                                 style: Theme.of(context).textTheme.caption,
                               ),
                               Text(
-                                S.of(context).items + ':' + _con.order.productOrders?.length?.toString() ?? 0,
+                                S.of(context).items +
+                                        ':' +
+                                        _con.order.productOrders?.length
+                                            ?.toString() ??
+                                    0,
                                 style: Theme.of(context).textTheme.caption,
                               ),
                             ],
@@ -963,7 +1065,8 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
                             style: Theme.of(context).textTheme.bodyText1,
                           ),
                         ),
-                        Helper.getPrice(Helper.getSubTotalOrdersPrice(_con.order), context,
+                        Helper.getPrice(
+                            Helper.getSubTotalOrdersPrice(_con.order), context,
                             style: Theme.of(context).textTheme.bodyText2)
                       ],
                     ),
@@ -975,7 +1078,8 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
                             style: Theme.of(context).textTheme.bodyText1,
                           ),
                         ),
-                        Helper.getPrice(_con.order.deliveryFee, context, style: Theme.of(context).textTheme.bodyText2)
+                        Helper.getPrice(_con.order.deliveryFee, context,
+                            style: Theme.of(context).textTheme.bodyText2)
                       ],
                     ),
                     Row(
@@ -999,8 +1103,12 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
                             style: Theme.of(context).textTheme.headline6,
                           ),
                         ),
-                        Helper.getPrice(Helper.getTotalOrdersPrice(_con.order), context,
-                            style: Theme.of(context).textTheme.headline6.copyWith(fontSize: 15))
+                        Helper.getPrice(
+                            Helper.getTotalOrdersPrice(_con.order), context,
+                            style: Theme.of(context)
+                                .textTheme
+                                .headline6
+                                .copyWith(fontSize: 15))
                       ],
                     ),
                     Divider(height: 5),
@@ -1040,8 +1148,10 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
                                 items: ProductOrderFilter.values
                                     .map((e) => DropdownMenuItem(
                                           child: Padding(
-                                            padding: const EdgeInsets.only(right: 36.0),
-                                            child: Text(Helper.productOrderFilterValues[e]),
+                                            padding: const EdgeInsets.only(
+                                                right: 36.0),
+                                            child: Text(Helper
+                                                .productOrderFilterValues[e]),
                                           ),
                                           value: e,
                                         ))
@@ -1064,8 +1174,10 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
                           );
                         },
                         itemBuilder: (context, index) {
-                          final productOrder = getFilteredProductOrders().elementAt(index);
-                          var selectedQuantity = minSelectedQuantity; //double.parse(productOrder.quantity).toInt();
+                          final productOrder =
+                              getFilteredProductOrders().elementAt(index);
+                          var selectedQuantity =
+                              minSelectedQuantity; //double.parse(productOrder.quantity).toInt();
                           Widget counter = StatefulBuilder(
                             builder: (BuildContext context, setState) {
                               return Column(
@@ -1089,8 +1201,11 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
                                             ),
                                             onTap: () {
                                               print('up');
-                                              final maxQuantity = Helper.toDouble(productOrder?.quantity);
-                                              if (selectedQuantity < maxQuantity.toInt()) {
+                                              final maxQuantity =
+                                                  Helper.toDouble(
+                                                      productOrder?.quantity);
+                                              if (selectedQuantity <
+                                                  maxQuantity.toInt()) {
                                                 setState(() {
                                                   ++selectedQuantity;
                                                 });
@@ -1104,7 +1219,8 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
                                             ),
                                             onTap: () {
                                               print('down');
-                                              if (selectedQuantity > minSelectedQuantity) {
+                                              if (selectedQuantity >
+                                                  minSelectedQuantity) {
                                                 setState(() {
                                                   --selectedQuantity;
                                                 });
@@ -1118,31 +1234,39 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
                                       if (!partialReject)
                                         IconButton(
                                           padding: EdgeInsets.all(0),
-                                          visualDensity: VisualDensity(horizontal: -4.0, vertical: -4.0),
+                                          visualDensity: VisualDensity(
+                                              horizontal: -4.0, vertical: -4.0),
                                           icon: Icon(Icons.shopping_bag),
                                           onPressed: () {
                                             //setState(() {
-                                            productOrder.selectedQuantity = selectedQuantity.toString();
+                                            productOrder.selectedQuantity =
+                                                selectedQuantity.toString();
                                             //});
                                             // call the add to bag function
                                             selectedProductOrders.clear();
-                                            selectedProductOrders.add(productOrder.id);
+                                            selectedProductOrders
+                                                .add(productOrder.id);
                                             addToBag(_con.order.id);
                                           },
                                         ),
                                       if (partialReject)
                                         IconButton(
                                           padding: EdgeInsets.all(0),
-                                          visualDensity: VisualDensity(horizontal: -4.0, vertical: -4.0),
+                                          visualDensity: VisualDensity(
+                                              horizontal: -4.0, vertical: -4.0),
                                           icon: Icon(Icons.highlight_off),
                                           onPressed: () {
                                             //setState(() {
-                                            productOrder.selectedQuantity = selectedQuantity.toString();
+                                            productOrder.selectedQuantity =
+                                                selectedQuantity.toString();
                                             //});
                                             // call the out of stock function
                                             selectedProductOrders.clear();
-                                            selectedProductOrders.add(productOrder.id);
-                                            rejectProductOrdersPartial(_con.order.id, _con.order.driverId);
+                                            selectedProductOrders
+                                                .add(productOrder.id);
+                                            rejectProductOrdersPartial(
+                                                _con.order.id,
+                                                _con.order.driverId);
                                           },
                                         ),
                                     ],
@@ -1171,20 +1295,28 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
                             order: _con.order,
                             isScanned: partialReject
                                 ? false
-                                : productOrder.isScanned, //getFilteredProductOrders().elementAt(index).isScanned,
-                            productOrder: productOrder, //getFilteredProductOrders().elementAt(index),
+                                : productOrder
+                                    .isScanned, //getFilteredProductOrders().elementAt(index).isScanned,
+                            productOrder:
+                                productOrder, //getFilteredProductOrders().elementAt(index),
                             radio: Theme(
-                              data: ThemeData(unselectedWidgetColor: Colors.blue),
-                              child: double.parse(productOrder.quantity).toInt() !=
-                                          (productOrder.inBagQty ?? 0) + (productOrder.outOfStockQnty ?? 0) &&
-                                      _con.order.orderStatus.id == '2'
+                              data:
+                                  ThemeData(unselectedWidgetColor: Colors.blue),
+                              child: double.parse(productOrder.quantity)
+                                              .toInt() !=
+                                          (productOrder.inBagQty ?? 0) +
+                                              (productOrder.outOfStockQnty ??
+                                                  0) &&
+                                      (_con.order.orderStatus.id == '2' ||
+                                          _con.order.orderStatus.id == '6')
                                   ? counter
                                   : !(editPressed || partialReject)
                                       ? IconButton(
                                           icon: Icon(Icons.edit),
                                           onPressed: () {
                                             print('editPressed');
-                                            if (_con.order.orderStatus.id == '2')
+                                            if (_con.order.orderStatus.id ==
+                                                '2')
                                               setState(() {
                                                 editPressed = true;
                                               });
@@ -1204,7 +1336,8 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
                     children: <Widget>[
                       SizedBox(height: 20),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 7),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 7),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: <Widget>[
@@ -1219,7 +1352,8 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
                                   ),
                                   Text(
                                     _con.order.customername,
-                                    style: Theme.of(context).textTheme.bodyText1,
+                                    style:
+                                        Theme.of(context).textTheme.bodyText1,
                                   ),
                                 ],
                               ),
@@ -1230,7 +1364,9 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
                               height: 42,
                               child: FlatButton(
                                 padding: EdgeInsets.all(0),
-                                disabledColor: Theme.of(context).focusColor.withOpacity(0.4),
+                                disabledColor: Theme.of(context)
+                                    .focusColor
+                                    .withOpacity(0.4),
                                 onPressed: null,
                                 // onPressed: () {
                                 //  Navigator.of(context).pushNamed('/Profile',
@@ -1241,7 +1377,9 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
                                   color: Theme.of(context).primaryColor,
                                   size: 24,
                                 ),
-                                color: Theme.of(context).accentColor.withOpacity(0.9),
+                                color: Theme.of(context)
+                                    .accentColor
+                                    .withOpacity(0.9),
                                 shape: StadiumBorder(),
                               ),
                             ),
@@ -1249,7 +1387,8 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
                         ),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 7),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 7),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: <Widget>[
@@ -1265,8 +1404,11 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
                                   Text(
                                     _con.order.deliveryAddress != null
                                         ? '${_con.order.deliveryAddress.street}, ${_con.order.deliveryAddress.city}, ${_con.order.deliveryAddress.address}'
-                                        : S.of(context).address_not_provided_please_call_the_client,
-                                    style: Theme.of(context).textTheme.bodyText1,
+                                        : S
+                                            .of(context)
+                                            .address_not_provided_please_call_the_client,
+                                    style:
+                                        Theme.of(context).textTheme.bodyText1,
                                   ),
                                 ],
                               ),
@@ -1277,7 +1419,9 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
                               height: 42,
                               child: FlatButton(
                                 padding: EdgeInsets.all(0),
-                                disabledColor: Theme.of(context).focusColor.withOpacity(0.4),
+                                disabledColor: Theme.of(context)
+                                    .focusColor
+                                    .withOpacity(0.4),
                                 onPressed: () async {
                                   String googleUrl =
                                       // "https://www.google.com/maps/dir/?api=1&destination=18.565426,73.786262";
@@ -1304,7 +1448,9 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
                                   color: Theme.of(context).primaryColor,
                                   size: 24,
                                 ),
-                                color: Theme.of(context).accentColor.withOpacity(0.9),
+                                color: Theme.of(context)
+                                    .accentColor
+                                    .withOpacity(0.9),
                                 shape: StadiumBorder(),
                               ),
                             ),
@@ -1312,7 +1458,8 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
                         ),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 7),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 7),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: <Widget>[
@@ -1328,7 +1475,8 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
                                   Text(
                                     _con.order?.deliveryAddress?.phone ?? "",
                                     overflow: TextOverflow.ellipsis,
-                                    style: Theme.of(context).textTheme.bodyText1,
+                                    style:
+                                        Theme.of(context).textTheme.bodyText1,
                                   ),
                                 ],
                               ),
@@ -1340,14 +1488,17 @@ class _OrderWidgetState extends StateMVC<OrderWidget> with SingleTickerProviderS
                               child: FlatButton(
                                 padding: EdgeInsets.all(0),
                                 onPressed: () {
-                                  launch("tel:${_con.order.deliveryAddress.phone}");
+                                  launch(
+                                      "tel:${_con.order.deliveryAddress.phone}");
                                 },
                                 child: Icon(
                                   Icons.call,
                                   color: Theme.of(context).primaryColor,
                                   size: 24,
                                 ),
-                                color: Theme.of(context).accentColor.withOpacity(0.9),
+                                color: Theme.of(context)
+                                    .accentColor
+                                    .withOpacity(0.9),
                                 shape: StadiumBorder(),
                               ),
                             ),
@@ -1414,12 +1565,17 @@ class CustomRoundButton extends StatelessWidget {
         decoration: BoxDecoration(
             color: Theme.of(context).accentColor,
             borderRadius: BorderRadius.circular(50),
-            border: Border.all(color: Theme.of(context).accentColor.withOpacity(0.2), width: 1)),
+            border: Border.all(
+                color: Theme.of(context).accentColor.withOpacity(0.2),
+                width: 1)),
         child: Align(
           alignment: Alignment.center,
           child: Text(
             text,
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Theme.of(context).primaryColor),
+            style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+                color: Theme.of(context).primaryColor),
           ),
         ),
       ),

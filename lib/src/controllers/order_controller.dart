@@ -21,13 +21,15 @@ class OrderController extends ControllerMVC {
     orders.clear();
     final Stream<Order> stream = await getOrders();
     stream.listen((Order _order) {
-      int value = _order.productOrders
-          .fold<int>(0, (previousValue, element) => previousValue + double.parse(element.quantity).toInt());
-      int value2 =
-          _order.productOrders.fold<int>(0, (previousValue, element) => previousValue + (element.inBagQty ?? 0));
-      int value3 =
-          _order.productOrders.fold<int>(0, (previousValue, element) => previousValue + (element.outOfStockQnty ?? 0));
-      if (value <= value2 + value3 && value3 > 0) {
+      // int value = _order.productOrders
+      //     .fold<int>(0, (previousValue, element) => previousValue + double.parse(element.quantity).toInt());
+      // int value2 =
+      //     _order.productOrders.fold<int>(0, (previousValue, element) => previousValue + (element.inBagQty ?? 0));
+      int value3 = _order.productOrders.fold<int>(
+          0,
+          (previousValue, element) =>
+              previousValue + (element.outOfStockQnty ?? 0));
+      if (/*value <= value2 + value3 && */ value3 > 0) {
         _order.orderStatus = OrderStatus.fromJSON({
           'id': '6',
           'status': 'Action_required',
@@ -57,13 +59,15 @@ class OrderController extends ControllerMVC {
     orders.clear();
     final Stream<Order> stream = await getOrders1();
     stream.listen((Order _order) {
-      int value = _order.productOrders
-          .fold<int>(0, (previousValue, element) => previousValue + double.parse(element.quantity).toInt());
-      int value2 =
-          _order.productOrders.fold<int>(0, (previousValue, element) => previousValue + (element.inBagQty ?? 0));
-      int value3 =
-          _order.productOrders.fold<int>(0, (previousValue, element) => previousValue + (element.outOfStockQnty ?? 0));
-      if (value <= value2 + value3 && value3 > 0) {
+      // int value = _order.productOrders
+      //     .fold<int>(0, (previousValue, element) => previousValue + double.parse(element.quantity).toInt());
+      // int value2 =
+      //     _order.productOrders.fold<int>(0, (previousValue, element) => previousValue + (element.inBagQty ?? 0));
+      int value3 = _order.productOrders.fold<int>(
+          0,
+          (previousValue, element) =>
+              previousValue + (element.outOfStockQnty ?? 0));
+      if (/*value <= value2 + value3 && */ value3 > 0) {
         _order.orderStatus = OrderStatus.fromJSON({
           'id': '6',
           'status': 'Action_required',
