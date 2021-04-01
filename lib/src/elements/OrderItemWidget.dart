@@ -11,7 +11,8 @@ class OrderItemWidget extends StatefulWidget {
   final Order order;
   final Function callback;
 
-  OrderItemWidget({Key key, this.expanded, this.order, this.callback}) : super(key: key);
+  OrderItemWidget({Key key, this.expanded, this.order, this.callback})
+      : super(key: key);
 
   @override
   _OrderItemWidgetState createState() => _OrderItemWidgetState();
@@ -32,7 +33,10 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
               decoration: BoxDecoration(
                 color: Theme.of(context).primaryColor.withOpacity(0.9),
                 boxShadow: [
-                  BoxShadow(color: Theme.of(context).focusColor.withOpacity(0.1), blurRadius: 5, offset: Offset(0, 2)),
+                  BoxShadow(
+                      color: Theme.of(context).focusColor.withOpacity(0.1),
+                      blurRadius: 5,
+                      offset: Offset(0, 2)),
                 ],
               ),
               child: Theme(
@@ -41,7 +45,8 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
                   initiallyExpanded: widget.expanded,
                   title: Column(
                     children: <Widget>[
-                      Text('${S.of(context).order_id}: #${widget.order.increment_id}'),
+                      Text(
+                          '${S.of(context).order_id}: #${widget.order.increment_id}'),
                       Text(
                         widget.order.productOrders.isNotEmpty
                             ? 'Delivery Date: ${widget.order.productOrders.first.deliveryDate}'
@@ -49,7 +54,11 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
                         style: Theme.of(context).textTheme.caption,
                       ),
                       Text(
-                        S.of(context).items + ':' + widget.order.productOrders?.length?.toString() ?? 0,
+                        S.of(context).items +
+                                ':' +
+                                widget.order.productOrders?.length
+                                    ?.toString() ??
+                            0,
                         style: Theme.of(context).textTheme.caption,
                       ),
                     ],
@@ -60,7 +69,8 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
-                      Helper.getPrice(Helper.getTotalOrdersPrice(widget.order), context,
+                      Helper.getPrice(
+                          Helper.getTotalOrdersPrice(widget.order), context,
                           style: Theme.of(context).textTheme.subtitle1),
                       Text(
                         '${widget.order.payment.method}',
@@ -78,7 +88,8 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
                     //   },
                     // )),
                     Padding(
-                      padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                      padding:
+                          EdgeInsets.symmetric(vertical: 10, horizontal: 20),
                       child: Column(
                         children: <Widget>[
                           Row(
@@ -113,7 +124,9 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
                                   style: Theme.of(context).textTheme.bodyText1,
                                 ),
                               ),
-                              Helper.getPrice(Helper.getTotalOrdersPrice(widget.order), context,
+                              Helper.getPrice(
+                                  Helper.getTotalOrdersPrice(widget.order),
+                                  context,
                                   style: Theme.of(context).textTheme.subtitle2)
                             ],
                           ),
@@ -134,8 +147,9 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
                       // Navigator.of(context).pushNamed('/OrderDetails', arguments: RouteArgument(id: widget.order.id));
                       Navigator.of(context)
                           .pushNamed('/OrderDetails',
-                              arguments:
-                                  RouteArgument(id: widget.order.id, param: [false, widget.order.actionRequired]))
+                              arguments: RouteArgument(
+                                  id: widget.order.id,
+                                  param: [false, widget.order.actionRequired]))
                           .then((value) {
                         widget.callback();
                       });
@@ -160,15 +174,16 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
           padding: EdgeInsets.symmetric(horizontal: 10),
           height: 28,
           width: 140,
-          decoration:
-              BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(100)), color: Theme.of(context).accentColor),
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.all(Radius.circular(100)),
+              color: Theme.of(context).accentColor),
           alignment: AlignmentDirectional.center,
           child: Text(
             //'${widget.order.orderStatus.status}',
             getNextStatus() ?? "",
             maxLines: 1,
-            style:
-                Theme.of(context).textTheme.caption.merge(TextStyle(height: 1, color: Theme.of(context).primaryColor)),
+            style: Theme.of(context).textTheme.caption.merge(
+                TextStyle(height: 1, color: Theme.of(context).primaryColor)),
           ),
         ),
       ],
@@ -195,7 +210,8 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
       return "Delivered";
       //S.of(context).delivered;
 
-    } else if (widget.order.orderStatus.id == '6') {
+    } else if (widget.order.orderStatus.id == '6' ||
+        widget.order.orderStatus.id == '21') {
       return "Action required";
     }
     return null;

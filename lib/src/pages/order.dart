@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:markets_deliveryboy/src/helpers/custom_dialog_handler.dart';
+import 'package:markets_deliveryboy/src/helpers/payment_method_dialog_handler.dart';
 import 'package:markets_deliveryboy/src/models/order_status.dart';
 import 'package:markets_deliveryboy/src/models/product.dart';
 import 'package:markets_deliveryboy/src/models/product_order.dart';
@@ -397,11 +398,12 @@ class _OrderWidgetState extends StateMVC<OrderWidget>
         0,
         (previousValue, element) =>
             previousValue + (element.outOfStockQnty ?? 0));
-    if (/*value <= value2 + value3 && */ value3 > 0) {
+    if (/*value <= value2 + value3 && */ value3 > 0 &&
+        _con.order.orderStatus.id == '2') {
       setState(() {
         _con.order.orderStatus = OrderStatus.fromJSON({
-          'id': '6',
-          'status': 'Action_required',
+          'id': '21',
+          'status': 'Submit_Action_required',
         });
       });
     }
@@ -827,7 +829,7 @@ class _OrderWidgetState extends StateMVC<OrderWidget>
                   //       )
                   //     : SizedBox(height: 0),
                   _con.order.orderStatus.id ==
-                          '6' //&& currentUser.value.role_id == 'picker'
+                          '21' //&& currentUser.value.role_id == 'picker'
                       ? CustomRoundButton(
                           text: 'Action Required',
                           width: MediaQuery.of(context).size.width * 0.85,
@@ -1026,12 +1028,37 @@ class _OrderWidgetState extends StateMVC<OrderWidget>
                                       .textTheme
                                       .headline4
                                       .copyWith(fontSize: 16)),
-                              Text(
-                                _con.order.payment?.method ??
-                                    S.of(context).cash_on_delivery,
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 2,
-                                style: Theme.of(context).textTheme.caption,
+                              Row(
+                                children: [
+                                  if (currentUser.value.role_id == 'driver')
+                                    GestureDetector(
+                                      onTap: () {
+                                        final PaymentMethodDialogHandler
+                                            _paymentMethodDialogHandler =
+                                            PaymentMethodDialogHandler();
+                                        _paymentMethodDialogHandler
+                                            .show(context);
+                                      },
+                                      child: Text(
+                                        "Edit",
+                                        style: TextStyle(
+                                          color: Theme.of(context).accentColor,
+                                          fontWeight: FontWeight.bold,
+                                          decoration: TextDecoration.underline,
+                                        ),
+                                      ),
+                                    ),
+                                  SizedBox(
+                                    width: 4.0,
+                                  ),
+                                  Text(
+                                    _con.order.payment?.method ??
+                                        S.of(context).cash_on_delivery,
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 2,
+                                    style: Theme.of(context).textTheme.caption,
+                                  ),
+                                ],
                               ),
                               Text(
                                 S.of(context).items +
@@ -1308,7 +1335,7 @@ class _OrderWidgetState extends StateMVC<OrderWidget>
                                               (productOrder.outOfStockQnty ??
                                                   0) &&
                                       (_con.order.orderStatus.id == '2' ||
-                                          _con.order.orderStatus.id == '6')
+                                          _con.order.orderStatus.id == '21')
                                   ? counter
                                   : !(editPressed || partialReject)
                                       ? IconButton(
@@ -1538,7 +1565,8 @@ class _OrderWidgetState extends StateMVC<OrderWidget>
       return "Delivered";
       //S.of(context).delivered;
 
-    } else if (_con.order.orderStatus.id == '6') {
+    } else if (_con.order.orderStatus.id == '6' ||
+        _con.order.orderStatus.id == '21') {
       return "Action required";
     }
     return null;

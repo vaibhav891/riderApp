@@ -46,10 +46,11 @@ class OrderDetailsController extends ControllerMVC {
           0,
           (previousValue, element) =>
               previousValue + (element.outOfStockQnty ?? 0));
-      if (/*value <= value2 + value3 && */ value3 > 0) {
+      if (/*value <= value2 + value3 && */ value3 > 0 &&
+          _order.orderStatus.id == '2') {
         _order.orderStatus = OrderStatus.fromJSON({
-          'id': '6',
-          'status': 'Action_required',
+          'id': '21',
+          'status': 'Submit_Action_required',
         });
       }
       setState(() => order = _order);
