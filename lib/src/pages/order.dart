@@ -3,11 +3,13 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:markets_deliveryboy/src/helpers/custom_dialog_handler.dart';
 import 'package:markets_deliveryboy/src/helpers/payment_method_dialog_handler.dart';
 import 'package:markets_deliveryboy/src/models/order_status.dart';
 import 'package:markets_deliveryboy/src/models/product.dart';
 import 'package:markets_deliveryboy/src/models/product_order.dart';
+import 'package:markets_deliveryboy/src/repository/order_repository.dart';
 import 'package:mvc_pattern/mvc_pattern.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:printing/printing.dart';
@@ -115,46 +117,46 @@ class _OrderWidgetState extends StateMVC<OrderWidget>
   @override
   Widget build(BuildContext context) {
     //outOfStock = ;
-    return Scaffold(
-      key: _con.scaffoldKey,
-      drawer: DrawerWidget(),
-      // floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      // floatingActionButton: _con.isPickerStatus()
-      //     ? FloatingActionButton(
-      //         onPressed: () async {
-      //           await _onScanPressed();
-      //         },
-      //         child: Text('Scan'),
-      //       )
-      //     : null,
-      bottomNavigationBar: isView
-          ? Container(
-              height: 80,
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-              decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor,
-                  borderRadius: BorderRadius.only(
-                      topRight: Radius.circular(20),
-                      topLeft: Radius.circular(20)),
-                  boxShadow: [
-                    BoxShadow(
-                        color: Theme.of(context).focusColor.withOpacity(0.15),
-                        offset: Offset(0, -2),
-                        blurRadius: 5.0)
-                  ]),
-              child: CustomRoundButton(
-                text: 'Start picking',
-                width: MediaQuery.of(context).size.width * 0.4,
-                onPressed: () {
-                  setState(() {
-                    isView = false;
-                    workSelected = true;
-                  });
-                },
-              ),
-            )
-          : _buildBottomBar(),
-      body: _buildBody(),
+    return Listener(
+      onPointerDown: (_) {
+        FocusScopeNode currentFocus = FocusScope.of(context);
+        if (!currentFocus.hasPrimaryFocus &&
+            currentFocus.focusedChild != null) {
+          currentFocus.focusedChild.unfocus();
+        }
+      },
+      child: Scaffold(
+        key: _con.scaffoldKey,
+        drawer: DrawerWidget(),
+        bottomNavigationBar: isView
+            ? Container(
+                height: 80,
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColor,
+                    borderRadius: BorderRadius.only(
+                        topRight: Radius.circular(20),
+                        topLeft: Radius.circular(20)),
+                    boxShadow: [
+                      BoxShadow(
+                          color: Theme.of(context).focusColor.withOpacity(0.15),
+                          offset: Offset(0, -2),
+                          blurRadius: 5.0)
+                    ]),
+                child: CustomRoundButton(
+                  text: 'Start picking',
+                  width: MediaQuery.of(context).size.width * 0.4,
+                  onPressed: () {
+                    setState(() {
+                      isView = false;
+                      workSelected = true;
+                    });
+                  },
+                ),
+              )
+            : _buildBottomBar(),
+        body: _buildBody(),
+      ),
     );
   }
 
@@ -876,16 +878,472 @@ class _OrderWidgetState extends StateMVC<OrderWidget>
       ? CircularLoadingWidget(height: MediaQuery.of(context).size.height)
       : CustomScrollView(slivers: <Widget>[
           _buildSliverAppBar(),
-          //_buildProductsCustomerContainer(),
+          _buildProductsCustomerContainer(),
         ]);
 
-  // _buildProductsCustomerContainer() {
-  //   return SliverToBoxAdapter(
-  //     child: SliverList(
-  //       delegate: SliverChildListDelegate([]),
-  //     ),
-  //   );
-  // }
+  _buildProductsCustomerContainer() {
+    return SliverToBoxAdapter(
+      // child: SliverList(
+      //   delegate: SliverChildListDelegate([]),
+      // ),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 5.0),
+            child: ExpansionTile(
+              title: Text(
+                //_con.order?.orderStatus?.status ?? '',
+                getNextStatus() ?? "", overflow: TextOverflow.ellipsis,
+                maxLines: 2,
+                style: Theme.of(context).textTheme.headline4,
+              ),
+              children: [
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Text(
+                        S.of(context).subtotal,
+                        style: Theme.of(context).textTheme.bodyText1,
+                      ),
+                    ),
+                    Helper.getPrice(
+                        Helper.getSubTotalOrdersPrice(_con.order), context,
+                        style: Theme.of(context).textTheme.bodyText2)
+                  ],
+                ),
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Text(
+                        S.of(context).delivery_fee,
+                        style: Theme.of(context).textTheme.bodyText1,
+                      ),
+                    ),
+                    Helper.getPrice(_con.order.deliveryFee, context,
+                        style: Theme.of(context).textTheme.bodyText2)
+                  ],
+                ),
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Text(
+                        '${S.of(context).tax} (${Helper.stringToStringFixed(_con.order.tax, 2)}%)',
+                        style: Theme.of(context).textTheme.bodyText1,
+                      ),
+                    ),
+                    Helper.getPrice(Helper.getTaxOrder(_con.order), context,
+                        style: Theme.of(context).textTheme.bodyText2)
+                  ],
+                ),
+                Divider(height: 10),
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Text(
+                        S.of(context).total,
+                        style: Theme.of(context).textTheme.headline6,
+                      ),
+                    ),
+                    Helper.getPrice(
+                        Helper.getTotalOrdersPrice(_con.order), context,
+                        style: Theme.of(context)
+                            .textTheme
+                            .headline6
+                            .copyWith(fontSize: 15))
+                  ],
+                ),
+                Divider(height: 5),
+                Container(
+                  width: MediaQuery.of(context).size.width * 0.6,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(_switchToProducts ? 'Products' : 'Customer',
+                          style: Theme.of(context).textTheme.subtitle1),
+                      Switch(
+                        value: _switchToProducts,
+                        onChanged: (val) {
+                          setState(() {
+                            _switchToProducts = val;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Column(
+            children: [
+              currentUser.value.role_id == 'picker'
+                  ? Offstage(
+                      offstage: !_switchToProducts,
+                      child: Container(
+                        child: DropdownButton(
+                          value: _filterDropdownValue,
+                          onChanged: (newVal) {
+                            setState(() {
+                              _filterDropdownValue = newVal;
+                            });
+                          },
+                          items: ProductOrderFilter.values
+                              .map((e) => DropdownMenuItem(
+                                    child: Padding(
+                                      padding:
+                                          const EdgeInsets.only(right: 36.0),
+                                      child: Text(
+                                          Helper.productOrderFilterValues[e]),
+                                    ),
+                                    value: e,
+                                  ))
+                              .toList(),
+                        ),
+                      ),
+                    )
+                  : Container(),
+              Offstage(
+                offstage: !_switchToProducts,
+                child: ListView.separated(
+                  padding: EdgeInsets.only(top: 20, bottom: 20),
+                  scrollDirection: Axis.vertical,
+                  shrinkWrap: true,
+                  primary: false,
+                  itemCount: getFilteredProductOrders()?.length ?? 0,
+                  separatorBuilder: (context, index) {
+                    return Divider(
+                      color: Colors.grey,
+                    );
+                  },
+                  itemBuilder: (context, index) {
+                    final productOrder =
+                        getFilteredProductOrders().elementAt(index);
+                    var selectedQuantity =
+                        minSelectedQuantity; //double.parse(productOrder.quantity).toInt();
+                    Widget counter = StatefulBuilder(
+                      builder: (BuildContext context, setState) {
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(1),
+                                    border: Border.all(
+                                      color: Colors.grey,
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      GestureDetector(
+                                          child: Icon(
+                                            Icons.arrow_drop_up,
+                                            size: 30,
+                                          ),
+                                          onTap: () {
+                                            final maxQuantity = Helper.toDouble(
+                                                productOrder?.quantity);
+                                            if (selectedQuantity <
+                                                maxQuantity.toInt()) {
+                                              setState(() {
+                                                ++selectedQuantity;
+                                              });
+                                            }
+                                          }),
+                                      Text(selectedQuantity.toString()),
+                                      GestureDetector(
+                                          child: Icon(
+                                            Icons.arrow_drop_down,
+                                            size: 30,
+                                          ),
+                                          onTap: () {
+                                            if (selectedQuantity >
+                                                minSelectedQuantity) {
+                                              setState(() {
+                                                --selectedQuantity;
+                                              });
+                                            }
+                                          }),
+                                    ],
+                                  ),
+                                ),
+                                Row(
+                                  children: [
+                                    if (!partialReject)
+                                      IconButton(
+                                        padding: EdgeInsets.all(0),
+                                        visualDensity: VisualDensity(
+                                            horizontal: -4.0, vertical: -4.0),
+                                        icon: Icon(Icons.shopping_bag),
+                                        onPressed: () {
+                                          //setState(() {
+                                          productOrder.selectedQuantity =
+                                              selectedQuantity.toString();
+                                          //});
+                                          // call the add to bag function
+                                          selectedProductOrders.clear();
+                                          selectedProductOrders
+                                              .add(productOrder.id);
+                                          addToBag(_con.order.id);
+                                        },
+                                      ),
+                                    if (partialReject)
+                                      IconButton(
+                                        padding: EdgeInsets.all(0),
+                                        visualDensity: VisualDensity(
+                                            horizontal: -4.0, vertical: -4.0),
+                                        icon: Icon(Icons.highlight_off),
+                                        onPressed: () {
+                                          //setState(() {
+                                          productOrder.selectedQuantity =
+                                              selectedQuantity.toString();
+                                          //});
+                                          // call the out of stock function
+                                          selectedProductOrders.clear();
+                                          selectedProductOrders
+                                              .add(productOrder.id);
+                                          rejectProductOrdersPartial(
+                                              _con.order.id,
+                                              _con.order.driverId);
+                                        },
+                                      ),
+                                  ],
+                                )
+                                // Checkbox(
+                                //   value: selectedProductOrders.contains(_con.order.productOrders.elementAt(index).id),
+                                //   onChanged: _con.order.orderStatus.id == '1'
+                                //       ? null
+                                //       : (newval) {
+                                //           setState(() {
+                                //             _con.order.productOrders.elementAt(index).selectedQuantity =
+                                //                 selectedQuantity.toString();
+                                //             newval
+                                //                 ? selectedProductOrders.add(_con.order.productOrders.elementAt(index).id)
+                                //                 : selectedProductOrders.remove(_con.order.productOrders.elementAt(index).id);
+                                //           });
+                                //         },
+                                // ),
+                              ],
+                            ),
+                          ],
+                        );
+                      },
+                    );
+
+                    return ProductOrderItemWidget(
+                      heroTag: 'my_orders',
+                      order: _con.order,
+                      isScanned: partialReject
+                          ? false
+                          : productOrder
+                              .isScanned, //getFilteredProductOrders().elementAt(index).isScanned,
+                      productOrder:
+                          productOrder, //getFilteredProductOrders().elementAt(index),
+                      radio: Theme(
+                        data: ThemeData(unselectedWidgetColor: Colors.blue),
+                        child: double.parse(productOrder.quantity).toInt() !=
+                                    (productOrder.inBagQty ?? 0) +
+                                        (productOrder.outOfStockQnty ?? 0) &&
+                                (_con.order.orderStatus.id == '2' ||
+                                    _con.order.orderStatus.id == '21')
+                            ? counter
+                            : !(editPressed || partialReject)
+                                ? IconButton(
+                                    icon: Icon(Icons.edit),
+                                    onPressed: () {
+                                      print('editPressed');
+                                      if (_con.order.orderStatus.id == '2')
+                                        setState(
+                                          () {
+                                            editPressed = true;
+                                          },
+                                        );
+                                    },
+                                  )
+                                : counter,
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+          Offstage(
+            offstage: _switchToProducts,
+            child: Column(
+              children: <Widget>[
+                SizedBox(height: 20),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 7),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Text(
+                              'Fullname',
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context).textTheme.caption,
+                            ),
+                            Text(
+                              _con.order.customername,
+                              style: Theme.of(context).textTheme.bodyText1,
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(width: 20),
+                      SizedBox(
+                        width: 42,
+                        height: 42,
+                        child: FlatButton(
+                          padding: EdgeInsets.all(0),
+                          disabledColor:
+                              Theme.of(context).focusColor.withOpacity(0.4),
+                          onPressed: null,
+                          // onPressed: () {
+                          //  Navigator.of(context).pushNamed('/Profile',
+                          //      arguments: new RouteArgument(param: _con.order.deliveryAddress));
+                          // },
+                          child: Icon(
+                            Icons.person,
+                            color: Theme.of(context).primaryColor,
+                            size: 24,
+                          ),
+                          color: Theme.of(context).accentColor.withOpacity(0.9),
+                          shape: StadiumBorder(),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 7),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Text(
+                              S.of(context).deliveryAddress,
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context).textTheme.caption,
+                            ),
+                            Text(
+                              _con.order.deliveryAddress != null
+                                  ? '${_con.order.deliveryAddress.street}, ${_con.order.deliveryAddress.city}, ${_con.order.deliveryAddress.address}'
+                                  : S
+                                      .of(context)
+                                      .address_not_provided_please_call_the_client,
+                              style: Theme.of(context).textTheme.bodyText1,
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(width: 20),
+                      SizedBox(
+                        width: 42,
+                        height: 42,
+                        child: FlatButton(
+                          padding: EdgeInsets.all(0),
+                          disabledColor:
+                              Theme.of(context).focusColor.withOpacity(0.4),
+                          onPressed: () async {
+                            String googleUrl =
+                                // "https://www.google.com/maps/dir/?api=1&destination=18.565426,73.786262";
+                                "https://www.google.com/maps/dir/?api=1&destination=${_con.order.deliveryAddress.latitude},${_con.order.deliveryAddress.longitude}";
+                            String appleUrl =
+                                'https://maps.apple.com/?daddr=${_con.order.deliveryAddress.latitude},${_con.order.deliveryAddress.longitude}';
+                            // 'https://maps.apple.com/?daddr=18.565426,73.786262';
+                            if (await canLaunch(googleUrl)) {
+                              print('launching com googleUrl');
+                              await launch(googleUrl);
+                            } else if (await canLaunch(appleUrl)) {
+                              print('launching apple url');
+                              await launch(appleUrl);
+                            } else {
+                              throw 'Could not launch url';
+                            }
+                          },
+                          // {
+                          //   Navigator.of(context)
+                          //       .pushNamed('/Pages', arguments: new RouteArgument(id: '3', param: _con.order));
+                          // },
+                          child: Icon(
+                            Icons.directions,
+                            color: Theme.of(context).primaryColor,
+                            size: 24,
+                          ),
+                          color: Theme.of(context).accentColor.withOpacity(0.9),
+                          shape: StadiumBorder(),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 7),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Text(
+                              S.of(context).phoneNumber,
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context).textTheme.caption,
+                            ),
+                            Text(
+                              _con.order?.deliveryAddress?.phone ?? "",
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context).textTheme.bodyText1,
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(width: 10),
+                      SizedBox(
+                        width: 42,
+                        height: 42,
+                        child: FlatButton(
+                          padding: EdgeInsets.all(0),
+                          onPressed: () {
+                            launch("tel:${_con.order.deliveryAddress.phone}");
+                          },
+                          child: Icon(
+                            Icons.call,
+                            color: Theme.of(context).primaryColor,
+                            size: 24,
+                          ),
+                          color: Theme.of(context).accentColor.withOpacity(0.9),
+                          shape: StadiumBorder(),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // SizedBox(
+          //   height: _con.isDelivererStatus() ? 135 : 95,
+          // ),
+        ],
+      ),
+    );
+  }
 
   _buildSliverAppBar() {
     return SliverAppBar(
@@ -957,7 +1415,7 @@ class _OrderWidgetState extends StateMVC<OrderWidget>
             labelColor: Theme.of(context).accentColor),
       ],
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      expandedHeight: MediaQuery.of(context).size.height, // * 0.9,
+      expandedHeight: MediaQuery.of(context).size.height * 0.2,
       elevation: 0,
       flexibleSpace: FlexibleSpaceBar(
         // collapseMode: CollapseMode.pin,
@@ -1032,12 +1490,28 @@ class _OrderWidgetState extends StateMVC<OrderWidget>
                                 children: [
                                   if (currentUser.value.role_id == 'driver')
                                     GestureDetector(
-                                      onTap: () {
+                                      onTap: () async {
                                         final PaymentMethodDialogHandler
                                             _paymentMethodDialogHandler =
                                             PaymentMethodDialogHandler();
-                                        _paymentMethodDialogHandler
-                                            .show(context);
+                                        PaymentMethod result =
+                                            await _paymentMethodDialogHandler
+                                                .show(context,
+                                                    _con.order.payment.method);
+                                        if (result != null) {
+                                          var customDialogHandler =
+                                              CustomDialogHandler();
+                                          customDialogHandler.show(context);
+                                          var message =
+                                              await updatePaymentMethod(
+                                                  _con.order.id, result.id);
+                                          customDialogHandler.hide();
+                                          Fluttertoast.showToast(msg: message);
+                                          if ((message as String)
+                                              .contains('successful'))
+                                            _con.order.payment.method =
+                                                result.id;
+                                        }
                                       },
                                       child: Text(
                                         "Edit",
@@ -1074,469 +1548,6 @@ class _OrderWidgetState extends StateMVC<OrderWidget>
                       ),
                     )
                   ],
-                ),
-                Divider(height: 10),
-                ExpansionTile(
-                  title: Text(
-                    //_con.order?.orderStatus?.status ?? '',
-                    getNextStatus() ?? "", overflow: TextOverflow.ellipsis,
-                    maxLines: 2,
-                    style: Theme.of(context).textTheme.headline4,
-                  ),
-                  children: [
-                    Row(
-                      children: <Widget>[
-                        Expanded(
-                          child: Text(
-                            S.of(context).subtotal,
-                            style: Theme.of(context).textTheme.bodyText1,
-                          ),
-                        ),
-                        Helper.getPrice(
-                            Helper.getSubTotalOrdersPrice(_con.order), context,
-                            style: Theme.of(context).textTheme.bodyText2)
-                      ],
-                    ),
-                    Row(
-                      children: <Widget>[
-                        Expanded(
-                          child: Text(
-                            S.of(context).delivery_fee,
-                            style: Theme.of(context).textTheme.bodyText1,
-                          ),
-                        ),
-                        Helper.getPrice(_con.order.deliveryFee, context,
-                            style: Theme.of(context).textTheme.bodyText2)
-                      ],
-                    ),
-                    Row(
-                      children: <Widget>[
-                        Expanded(
-                          child: Text(
-                            '${S.of(context).tax} (${Helper.stringToStringFixed(_con.order.tax, 2)}%)',
-                            style: Theme.of(context).textTheme.bodyText1,
-                          ),
-                        ),
-                        Helper.getPrice(Helper.getTaxOrder(_con.order), context,
-                            style: Theme.of(context).textTheme.bodyText2)
-                      ],
-                    ),
-                    Divider(height: 10),
-                    Row(
-                      children: <Widget>[
-                        Expanded(
-                          child: Text(
-                            S.of(context).total,
-                            style: Theme.of(context).textTheme.headline6,
-                          ),
-                        ),
-                        Helper.getPrice(
-                            Helper.getTotalOrdersPrice(_con.order), context,
-                            style: Theme.of(context)
-                                .textTheme
-                                .headline6
-                                .copyWith(fontSize: 15))
-                      ],
-                    ),
-                    Divider(height: 5),
-                    Container(
-                      width: MediaQuery.of(context).size.width * 0.6,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(_switchToProducts ? 'Products' : 'Customer',
-                              style: Theme.of(context).textTheme.subtitle1),
-                          Switch(
-                            value: _switchToProducts,
-                            onChanged: (val) {
-                              setState(() {
-                                _switchToProducts = val;
-                              });
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                Column(
-                  children: [
-                    currentUser.value.role_id == 'picker'
-                        ? Offstage(
-                            offstage: !_switchToProducts,
-                            child: Container(
-                              child: DropdownButton(
-                                value: _filterDropdownValue,
-                                onChanged: (newVal) {
-                                  setState(() {
-                                    _filterDropdownValue = newVal;
-                                  });
-                                },
-                                items: ProductOrderFilter.values
-                                    .map((e) => DropdownMenuItem(
-                                          child: Padding(
-                                            padding: const EdgeInsets.only(
-                                                right: 36.0),
-                                            child: Text(Helper
-                                                .productOrderFilterValues[e]),
-                                          ),
-                                          value: e,
-                                        ))
-                                    .toList(),
-                              ),
-                            ),
-                          )
-                        : Container(),
-                    Offstage(
-                      offstage: !_switchToProducts,
-                      child: ListView.separated(
-                        padding: EdgeInsets.only(top: 20, bottom: 20),
-                        scrollDirection: Axis.vertical,
-                        shrinkWrap: true,
-                        primary: false,
-                        itemCount: getFilteredProductOrders()?.length ?? 0,
-                        separatorBuilder: (context, index) {
-                          return Divider(
-                            color: Colors.grey,
-                          );
-                        },
-                        itemBuilder: (context, index) {
-                          final productOrder =
-                              getFilteredProductOrders().elementAt(index);
-                          var selectedQuantity =
-                              minSelectedQuantity; //double.parse(productOrder.quantity).toInt();
-                          Widget counter = StatefulBuilder(
-                            builder: (BuildContext context, setState) {
-                              return Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  //Text('Add'),
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(1),
-                                      border: Border.all(
-                                        color: Colors.grey,
-                                        width: 1,
-                                      ),
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        GestureDetector(
-                                            child: Icon(
-                                              Icons.arrow_drop_up,
-                                              size: 30,
-                                            ),
-                                            onTap: () {
-                                              print('up');
-                                              final maxQuantity =
-                                                  Helper.toDouble(
-                                                      productOrder?.quantity);
-                                              if (selectedQuantity <
-                                                  maxQuantity.toInt()) {
-                                                setState(() {
-                                                  ++selectedQuantity;
-                                                });
-                                              }
-                                            }),
-                                        Text(selectedQuantity.toString()),
-                                        GestureDetector(
-                                            child: Icon(
-                                              Icons.arrow_drop_down,
-                                              size: 30,
-                                            ),
-                                            onTap: () {
-                                              print('down');
-                                              if (selectedQuantity >
-                                                  minSelectedQuantity) {
-                                                setState(() {
-                                                  --selectedQuantity;
-                                                });
-                                              }
-                                            }),
-                                      ],
-                                    ),
-                                  ),
-                                  Row(
-                                    children: [
-                                      if (!partialReject)
-                                        IconButton(
-                                          padding: EdgeInsets.all(0),
-                                          visualDensity: VisualDensity(
-                                              horizontal: -4.0, vertical: -4.0),
-                                          icon: Icon(Icons.shopping_bag),
-                                          onPressed: () {
-                                            //setState(() {
-                                            productOrder.selectedQuantity =
-                                                selectedQuantity.toString();
-                                            //});
-                                            // call the add to bag function
-                                            selectedProductOrders.clear();
-                                            selectedProductOrders
-                                                .add(productOrder.id);
-                                            addToBag(_con.order.id);
-                                          },
-                                        ),
-                                      if (partialReject)
-                                        IconButton(
-                                          padding: EdgeInsets.all(0),
-                                          visualDensity: VisualDensity(
-                                              horizontal: -4.0, vertical: -4.0),
-                                          icon: Icon(Icons.highlight_off),
-                                          onPressed: () {
-                                            //setState(() {
-                                            productOrder.selectedQuantity =
-                                                selectedQuantity.toString();
-                                            //});
-                                            // call the out of stock function
-                                            selectedProductOrders.clear();
-                                            selectedProductOrders
-                                                .add(productOrder.id);
-                                            rejectProductOrdersPartial(
-                                                _con.order.id,
-                                                _con.order.driverId);
-                                          },
-                                        ),
-                                    ],
-                                  )
-                                  // Checkbox(
-                                  //   value: selectedProductOrders.contains(_con.order.productOrders.elementAt(index).id),
-                                  //   onChanged: _con.order.orderStatus.id == '1'
-                                  //       ? null
-                                  //       : (newval) {
-                                  //           setState(() {
-                                  //             _con.order.productOrders.elementAt(index).selectedQuantity =
-                                  //                 selectedQuantity.toString();
-                                  //             newval
-                                  //                 ? selectedProductOrders.add(_con.order.productOrders.elementAt(index).id)
-                                  //                 : selectedProductOrders.remove(_con.order.productOrders.elementAt(index).id);
-                                  //           });
-                                  //         },
-                                  // ),
-                                ],
-                              );
-                            },
-                          );
-
-                          return ProductOrderItemWidget(
-                            heroTag: 'my_orders',
-                            order: _con.order,
-                            isScanned: partialReject
-                                ? false
-                                : productOrder
-                                    .isScanned, //getFilteredProductOrders().elementAt(index).isScanned,
-                            productOrder:
-                                productOrder, //getFilteredProductOrders().elementAt(index),
-                            radio: Theme(
-                              data:
-                                  ThemeData(unselectedWidgetColor: Colors.blue),
-                              child: double.parse(productOrder.quantity)
-                                              .toInt() !=
-                                          (productOrder.inBagQty ?? 0) +
-                                              (productOrder.outOfStockQnty ??
-                                                  0) &&
-                                      (_con.order.orderStatus.id == '2' ||
-                                          _con.order.orderStatus.id == '21')
-                                  ? counter
-                                  : !(editPressed || partialReject)
-                                      ? IconButton(
-                                          icon: Icon(Icons.edit),
-                                          onPressed: () {
-                                            print('editPressed');
-                                            if (_con.order.orderStatus.id ==
-                                                '2')
-                                              setState(() {
-                                                editPressed = true;
-                                              });
-                                          },
-                                        )
-                                      : counter,
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-                Offstage(
-                  offstage: _switchToProducts,
-                  child: Column(
-                    children: <Widget>[
-                      SizedBox(height: 20),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 7),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: <Widget>[
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: <Widget>[
-                                  Text(
-                                    'Fullname',
-                                    overflow: TextOverflow.ellipsis,
-                                    style: Theme.of(context).textTheme.caption,
-                                  ),
-                                  Text(
-                                    _con.order.customername,
-                                    style:
-                                        Theme.of(context).textTheme.bodyText1,
-                                  ),
-                                ],
-                              ),
-                            ),
-                            SizedBox(width: 20),
-                            SizedBox(
-                              width: 42,
-                              height: 42,
-                              child: FlatButton(
-                                padding: EdgeInsets.all(0),
-                                disabledColor: Theme.of(context)
-                                    .focusColor
-                                    .withOpacity(0.4),
-                                onPressed: null,
-                                // onPressed: () {
-                                //  Navigator.of(context).pushNamed('/Profile',
-                                //      arguments: new RouteArgument(param: _con.order.deliveryAddress));
-                                // },
-                                child: Icon(
-                                  Icons.person,
-                                  color: Theme.of(context).primaryColor,
-                                  size: 24,
-                                ),
-                                color: Theme.of(context)
-                                    .accentColor
-                                    .withOpacity(0.9),
-                                shape: StadiumBorder(),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 7),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: <Widget>[
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: <Widget>[
-                                  Text(
-                                    S.of(context).deliveryAddress,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: Theme.of(context).textTheme.caption,
-                                  ),
-                                  Text(
-                                    _con.order.deliveryAddress != null
-                                        ? '${_con.order.deliveryAddress.street}, ${_con.order.deliveryAddress.city}, ${_con.order.deliveryAddress.address}'
-                                        : S
-                                            .of(context)
-                                            .address_not_provided_please_call_the_client,
-                                    style:
-                                        Theme.of(context).textTheme.bodyText1,
-                                  ),
-                                ],
-                              ),
-                            ),
-                            SizedBox(width: 20),
-                            SizedBox(
-                              width: 42,
-                              height: 42,
-                              child: FlatButton(
-                                padding: EdgeInsets.all(0),
-                                disabledColor: Theme.of(context)
-                                    .focusColor
-                                    .withOpacity(0.4),
-                                onPressed: () async {
-                                  String googleUrl =
-                                      // "https://www.google.com/maps/dir/?api=1&destination=18.565426,73.786262";
-                                      "https://www.google.com/maps/dir/?api=1&destination=${_con.order.deliveryAddress.latitude},${_con.order.deliveryAddress.longitude}";
-                                  String appleUrl =
-                                      'https://maps.apple.com/?daddr=${_con.order.deliveryAddress.latitude},${_con.order.deliveryAddress.longitude}';
-                                  // 'https://maps.apple.com/?daddr=18.565426,73.786262';
-                                  if (await canLaunch(googleUrl)) {
-                                    print('launching com googleUrl');
-                                    await launch(googleUrl);
-                                  } else if (await canLaunch(appleUrl)) {
-                                    print('launching apple url');
-                                    await launch(appleUrl);
-                                  } else {
-                                    throw 'Could not launch url';
-                                  }
-                                },
-                                // {
-                                //   Navigator.of(context)
-                                //       .pushNamed('/Pages', arguments: new RouteArgument(id: '3', param: _con.order));
-                                // },
-                                child: Icon(
-                                  Icons.directions,
-                                  color: Theme.of(context).primaryColor,
-                                  size: 24,
-                                ),
-                                color: Theme.of(context)
-                                    .accentColor
-                                    .withOpacity(0.9),
-                                shape: StadiumBorder(),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 7),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: <Widget>[
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: <Widget>[
-                                  Text(
-                                    S.of(context).phoneNumber,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: Theme.of(context).textTheme.caption,
-                                  ),
-                                  Text(
-                                    _con.order?.deliveryAddress?.phone ?? "",
-                                    overflow: TextOverflow.ellipsis,
-                                    style:
-                                        Theme.of(context).textTheme.bodyText1,
-                                  ),
-                                ],
-                              ),
-                            ),
-                            SizedBox(width: 10),
-                            SizedBox(
-                              width: 42,
-                              height: 42,
-                              child: FlatButton(
-                                padding: EdgeInsets.all(0),
-                                onPressed: () {
-                                  launch(
-                                      "tel:${_con.order.deliveryAddress.phone}");
-                                },
-                                child: Icon(
-                                  Icons.call,
-                                  color: Theme.of(context).primaryColor,
-                                  size: 24,
-                                ),
-                                color: Theme.of(context)
-                                    .accentColor
-                                    .withOpacity(0.9),
-                                shape: StadiumBorder(),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(
-                  height: _con.isDelivererStatus() ? 135 : 95,
                 ),
               ],
             ),

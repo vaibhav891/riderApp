@@ -566,3 +566,63 @@ Future getPdfInvoice(String orderId) async {
     return 'Could not fetch invoice';
   }
 }
+
+Future updatePaymentMethod(String orderId, String paymentMethod) async {
+  Uri uri = Uri.parse('http://online.ajmanmarkets.ae/api/paymentmethod.php');
+
+  try {
+    final client = new http.Client();
+    final response = await client.post(
+      uri,
+      headers: {HttpHeaders.contentTypeHeader: 'application/json'},
+      body: json.encode({
+        "order_id": orderId,
+        "payment_method": paymentMethod,
+      }),
+    );
+    if (response.statusCode == 200) {
+      var body = jsonDecode(response.body);
+      if ((body as Map).containsKey('success')) {
+        if (body['success'] == "1")
+          return 'Updated successfully';
+        else
+          return 'Could not update data';
+      } else
+        return 'Could not update data';
+    } else
+      return 'Could not update data';
+  } catch (e) {
+    print(CustomTrace(StackTrace.current, message: uri.toString()).toString());
+    return 'Could not update data';
+  }
+}
+
+Future updateItemWeight(
+    String orderId, String productId, String itemWeight) async {
+  Uri uri = Uri.parse('https://online.ajmanmarkets.ae/api/weighteditem.php');
+
+  try {
+    final client = new http.Client();
+    final response = await client.post(
+      uri,
+      headers: {HttpHeaders.contentTypeHeader: 'application/json'},
+      body: json.encode({
+        "order_id": orderId,
+        "product_id": productId,
+        "weight": itemWeight,
+      }),
+    );
+    print(response.body);
+    if (response.statusCode == 200) {
+      if (jsonDecode(response.body)['success'] == 1) {
+        return 'Updated successfully';
+      } else {
+        return 'Could not update at this time';
+      }
+    } else
+      return 'Could not fetch data';
+  } catch (e) {
+    print(CustomTrace(StackTrace.current, message: uri.toString()).toString());
+    return 'Could not fetch data';
+  }
+}

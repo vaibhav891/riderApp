@@ -18,6 +18,7 @@ class ProductOrder {
   String categoryName;
   String selectedQuantity;
   String deliveryDate;
+  String weightedItem;
 
   ProductOrder(
       {this.id,
@@ -35,7 +36,8 @@ class ProductOrder {
       this.categoryId,
       this.categoryName,
       this.selectedQuantity,
-      this.deliveryDate});
+      this.deliveryDate,
+      this.weightedItem});
 
   ProductOrder.fromJSON(Map<String, dynamic> jsonMap) {
     try {
@@ -47,11 +49,18 @@ class ProductOrder {
       id = jsonMap['item_id'].toString();
       price = jsonMap['price'] != null ? jsonMap['price'] : '0.0';
       name = jsonMap['name'] != null ? jsonMap['name'] : '0.0';
-      quantity = jsonMap['qty_ordered'] != null ? jsonMap['qty_ordered'] : '0.0';
-      product = jsonMap['product'] != null ? Product.fromJSON(jsonMap['product']) : null;
-      dateTime = jsonMap['updated_at'] != null ? DateTime.parse(jsonMap['updated_at']) : null;
+      quantity =
+          jsonMap['qty_ordered'] != null ? jsonMap['qty_ordered'] : '0.0';
+      product = jsonMap['product'] != null
+          ? Product.fromJSON(jsonMap['product'])
+          : null;
+      dateTime = jsonMap['updated_at'] != null
+          ? DateTime.parse(jsonMap['updated_at'])
+          : null;
       options = jsonMap['options'] != null
-          ? List.from(jsonMap['options']).map((element) => Option.fromJSON(element)).toList()
+          ? List.from(jsonMap['options'])
+              .map((element) => Option.fromJSON(element))
+              .toList()
           : null;
       itemBarcode = jsonMap['item_barcode'];
       outOfStockQnty = jsonMap['outofstockqty'] ?? 0;
@@ -59,8 +68,13 @@ class ProductOrder {
       image = jsonMap['product_image'];
       categoryId = jsonMap['category_id'];
       categoryName = jsonMap['category_name'];
-      selectedQuantity = jsonMap['selected_quantity'] != null ? jsonMap['selected_quantity'] : '0.0';
-      deliveryDate = jsonMap['delivery_date'] != null ? jsonMap['delivery_date'] : "";
+      selectedQuantity = jsonMap['selected_quantity'] != null
+          ? jsonMap['selected_quantity']
+          : '0.0';
+      deliveryDate =
+          jsonMap['delivery_date'] != null ? jsonMap['delivery_date'] : "";
+      weightedItem =
+          jsonMap['weighted_item'] != null ? jsonMap['weighted_item'] : "";
     } catch (e) {
       isScanned = false;
       id = '';
@@ -77,6 +91,7 @@ class ProductOrder {
       categoryId = 0;
       categoryName = '';
       deliveryDate = '';
+      weightedItem = '';
       print(e);
     }
   }
@@ -97,6 +112,7 @@ class ProductOrder {
     map["category_id"] = inBagQty;
     map["selected_quantity"] = selectedQuantity;
     map["delivery_date"] = deliveryDate;
+    map["weighted_item"] = weightedItem;
     return map;
   }
 }

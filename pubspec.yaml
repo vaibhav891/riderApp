@@ -47,6 +47,7 @@ dependencies:
   qrscan: ^0.2.21
   permission_handler: ^5.0.1+1
   sliding_up_panel: ^1.0.2
+  keyboard_visibility: 0.5.6
 
 
 
