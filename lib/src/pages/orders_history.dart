@@ -8,7 +8,7 @@ import '../elements/OrderItemWidget.dart';
 import '../elements/ShoppingCartButtonWidget.dart';
 
 class OrdersHistoryWidget extends StatefulWidget {
-  final GlobalKey<ScaffoldState> parentScaffoldKey;
+  final GlobalKey<ScaffoldState> parentScaffoldKey; 
 
   OrdersHistoryWidget({Key key, this.parentScaffoldKey}) : super(key: key);
 

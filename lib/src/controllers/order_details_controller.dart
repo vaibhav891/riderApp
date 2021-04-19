@@ -97,19 +97,21 @@ class OrderDetailsController extends ControllerMVC {
 
   void doReadyOrder(Order _order) async {
     // updated to check if all items are either added to bag or marked out of stock before ready
-    // bool flag = false;
-    // for (var product in _order.productOrders) {
-    //   if (double.parse(product.quantity) != (product.inBagQty ?? 0) + (product.outOfStockQnty ?? 0)) {
-    //     flag = true;
-    //     break;
-    //   }
-    // }
-    // if (flag) {
-    //   scaffoldKey?.currentState?.showSnackBar(SnackBar(
-    //     content: Text('Please make sure all the products are either added to cart or marked as out of stock'),
-    //   ));
-    //   return;
-    // }
+    bool flag = false;
+    for (var product in _order.productOrders) {
+      if (double.parse(product.quantity) !=
+          (product.inBagQty ?? 0) + (product.outOfStockQnty ?? 0)) {
+        flag = true;
+        break;
+      }
+    }
+    if (flag) {
+      scaffoldKey?.currentState?.showSnackBar(SnackBar(
+        content: Text(
+            'Please make sure all the products are either added to cart or marked as out of stock'),
+      ));
+      return;
+    }
     ReadyOrder(_order).then((value) {
       int totalQty = 0, bagQty = 0;
       order.productOrders.forEach((element) {

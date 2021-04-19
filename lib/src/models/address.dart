@@ -19,9 +19,7 @@ class Address {
   Address.fromJSON(Map<String, dynamic> jsonMap) {
     try {
       id = jsonMap['id'].toString();
-      description = jsonMap['description'] != null
-          ? jsonMap['description'].toString()
-          : null;
+      description = jsonMap['description'] != null ? jsonMap['description'].toString() : null;
       address = jsonMap['region'] != null ? jsonMap['region'] : null;
       street = jsonMap['street'] != null ? jsonMap['street'] : null;
       city = jsonMap['city'] != null ? jsonMap['city'] : null;

@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:keyboard_visibility/keyboard_visibility.dart';
 import 'package:markets_deliveryboy/src/helpers/custom_dialog_handler.dart';
 import 'package:markets_deliveryboy/src/helpers/payment_method_dialog_handler.dart';
 import 'package:markets_deliveryboy/src/models/order_status.dart';
@@ -57,9 +58,17 @@ class _OrderWidgetState extends StateMVC<OrderWidget>
   TextEditingController _textController = TextEditingController();
   Future<File> pdfFile;
 
+  //scale item changes
+  // List<FocusNode> myFocusNode;
+  KeyboardVisibilityNotification _keyboardVisibility =
+      new KeyboardVisibilityNotification();
+  int _keyboardVisibilitySubscriberId;
+  List<TextEditingController> _weightFieldController;
+
   _OrderWidgetState() : super(OrderDetailsController()) {
     _con = controller;
   }
+
   final SignatureController _controller = SignatureController(
     penStrokeWidth: 5,
     penColor: Colors.red,
@@ -108,55 +117,70 @@ class _OrderWidgetState extends StateMVC<OrderWidget>
     _filterDropdownValue = currentUser.value.role_id == 'driver'
         ? ProductOrderFilter.all
         : _filterDropdownValue;
+
+    // _keyboardVisibilitySubscriberId = _keyboardVisibility.addNewListener(
+    //   onChange: (bool visible) {
+    //     if (!visible) {
+    //       for (var focusNode in myFocusNode) focusNode.unfocus();
+    //     }
+    //   },
+    // );
   }
 
   void dispose() {
+    _keyboardVisibility.removeListener(_keyboardVisibilitySubscriberId);
+    for (var key in _weightFieldController) {
+      key.dispose();
+    }
+
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     //outOfStock = ;
-    return Listener(
-      onPointerDown: (_) {
-        FocusScopeNode currentFocus = FocusScope.of(context);
-        if (!currentFocus.hasPrimaryFocus &&
-            currentFocus.focusedChild != null) {
-          currentFocus.focusedChild.unfocus();
-        }
-      },
-      child: Scaffold(
-        key: _con.scaffoldKey,
-        drawer: DrawerWidget(),
-        bottomNavigationBar: isView
-            ? Container(
-                height: 80,
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-                decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor,
-                    borderRadius: BorderRadius.only(
-                        topRight: Radius.circular(20),
-                        topLeft: Radius.circular(20)),
-                    boxShadow: [
-                      BoxShadow(
-                          color: Theme.of(context).focusColor.withOpacity(0.15),
-                          offset: Offset(0, -2),
-                          blurRadius: 5.0)
-                    ]),
-                child: CustomRoundButton(
-                  text: 'Start picking',
-                  width: MediaQuery.of(context).size.width * 0.4,
-                  onPressed: () {
-                    setState(() {
-                      isView = false;
-                      workSelected = true;
-                    });
-                  },
-                ),
-              )
-            : _buildBottomBar(),
-        body: _buildBody(),
-      ),
+    return
+        // Listener(
+        //   onPointerDown: (_) {
+        //     FocusScopeNode currentFocus = FocusScope.of(context);
+        //     if (!currentFocus.hasPrimaryFocus &&
+        //         currentFocus.focusedChild != null) {
+        //       currentFocus.focusedChild.unfocus();
+        //     }
+        //   },
+        //   child:
+        Scaffold(
+      key: _con.scaffoldKey,
+      drawer: DrawerWidget(),
+      bottomNavigationBar: isView
+          ? Container(
+              height: 80,
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+              decoration: BoxDecoration(
+                  color: Theme.of(context).primaryColor,
+                  borderRadius: BorderRadius.only(
+                      topRight: Radius.circular(20),
+                      topLeft: Radius.circular(20)),
+                  boxShadow: [
+                    BoxShadow(
+                        color: Theme.of(context).focusColor.withOpacity(0.15),
+                        offset: Offset(0, -2),
+                        blurRadius: 5.0)
+                  ]),
+              child: CustomRoundButton(
+                text: 'Start picking',
+                width: MediaQuery.of(context).size.width * 0.4,
+                onPressed: () {
+                  setState(() {
+                    isView = false;
+                    workSelected = true;
+                  });
+                },
+              ),
+            )
+          : _buildBottomBar(),
+      body: _buildBody(),
+      // ),
     );
   }
 
@@ -882,6 +906,9 @@ class _OrderWidgetState extends StateMVC<OrderWidget>
         ]);
 
   _buildProductsCustomerContainer() {
+    _weightFieldController =
+        _con.order.productOrders.map((e) => TextEditingController()).toList();
+    // myFocusNode = _con.order.productOrders.map((e) => FocusNode()).toList();
     return SliverToBoxAdapter(
       // child: SliverList(
       //   delegate: SliverChildListDelegate([]),
@@ -1018,117 +1045,182 @@ class _OrderWidgetState extends StateMVC<OrderWidget>
                   itemBuilder: (context, index) {
                     final productOrder =
                         getFilteredProductOrders().elementAt(index);
+                    _weightFieldController[index].value = TextEditingValue(
+                        text: productOrder.weightedItem,
+                        selection: TextSelection.collapsed(
+                            offset: productOrder.weightedItem.length));
+
                     var selectedQuantity =
                         minSelectedQuantity; //double.parse(productOrder.quantity).toInt();
                     Widget counter = StatefulBuilder(
                       builder: (BuildContext context, setState) {
-                        return Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Container(
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(1),
-                                    border: Border.all(
-                                      color: Colors.grey,
-                                      width: 1,
-                                    ),
-                                  ),
-                                  child: Row(
+                        return Expanded(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  (productOrder.scaleItem ?? false) &&
+                                          currentUser.value.role_id == 'picker'
+                                      ? Container(
+                                          width: 70,
+                                          child: TextField(
+                                            // focusNode: myFocusNode[index],
+                                            controller:
+                                                _weightFieldController[index],
+                                            textAlign: TextAlign.center,
+                                            decoration: InputDecoration(
+                                              isDense: true,
+                                              contentPadding:
+                                                  EdgeInsets.fromLTRB(
+                                                      4, 4, 4, 4),
+                                              border: OutlineInputBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(0),
+                                              ),
+                                            ),
+                                          ),
+                                        )
+                                      : Container(
+                                          decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(1),
+                                            border: Border.all(
+                                              color: Colors.grey,
+                                              width: 1,
+                                            ),
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              GestureDetector(
+                                                  child: Icon(
+                                                    Icons.arrow_drop_up,
+                                                    size: 30,
+                                                  ),
+                                                  onTap: () {
+                                                    final maxQuantity =
+                                                        Helper.toDouble(
+                                                            productOrder
+                                                                ?.quantity);
+                                                    if (selectedQuantity <
+                                                        maxQuantity.toInt()) {
+                                                      setState(() {
+                                                        ++selectedQuantity;
+                                                      });
+                                                    }
+                                                  }),
+                                              Text(selectedQuantity.toString()),
+                                              GestureDetector(
+                                                  child: Icon(
+                                                    Icons.arrow_drop_down,
+                                                    size: 30,
+                                                  ),
+                                                  onTap: () {
+                                                    if (selectedQuantity >
+                                                        minSelectedQuantity) {
+                                                      setState(() {
+                                                        --selectedQuantity;
+                                                      });
+                                                    }
+                                                  }),
+                                            ],
+                                          ),
+                                        ),
+                                  Row(
                                     children: [
-                                      GestureDetector(
-                                          child: Icon(
-                                            Icons.arrow_drop_up,
-                                            size: 30,
-                                          ),
-                                          onTap: () {
-                                            final maxQuantity = Helper.toDouble(
-                                                productOrder?.quantity);
-                                            if (selectedQuantity <
-                                                maxQuantity.toInt()) {
-                                              setState(() {
-                                                ++selectedQuantity;
-                                              });
+                                      if (!partialReject)
+                                        IconButton(
+                                          padding: EdgeInsets.all(0),
+                                          visualDensity: VisualDensity(
+                                              horizontal: -4.0, vertical: -4.0),
+                                          icon: Icon(Icons.shopping_bag),
+                                          onPressed: () async {
+                                            if (productOrder.scaleItem) {
+                                              productOrder.weightedItem =
+                                                  _weightFieldController[index]
+                                                      .text;
+                                              var weightedTotal = double.parse(
+                                                  _weightFieldController[index]
+                                                      .text);
+                                              Map<String, dynamic> reqMap = {
+                                                "order_id": _con.order.id,
+                                                "item": [
+                                                  {
+                                                    "product_id":
+                                                        productOrder.product.id,
+                                                    "qty": weightedTotal
+                                                        .toInt()
+                                                        .toString()
+                                                  }
+                                                ]
+                                              };
+                                              var message =
+                                                  await markAsOutOfStockAPI(
+                                                      reqMap);
+                                              if (message is Map) {
+                                                if (message['success'] == 1)
+                                                  productOrder.inBagQty =
+                                                      double.parse(
+                                                              message['bag'])
+                                                          .toInt();
+                                                message = message['message'];
+                                              }
+                                              Fluttertoast.showToast(
+                                                  msg: message);
+                                            } else {
+                                              //setState(() {
+                                              productOrder.selectedQuantity =
+                                                  selectedQuantity.toString();
+                                              //});
+                                              // call the add to bag function
+                                              selectedProductOrders.clear();
+                                              selectedProductOrders
+                                                  .add(productOrder.id);
+                                              addToBag(_con.order.id);
                                             }
-                                          }),
-                                      Text(selectedQuantity.toString()),
-                                      GestureDetector(
-                                          child: Icon(
-                                            Icons.arrow_drop_down,
-                                            size: 30,
-                                          ),
-                                          onTap: () {
-                                            if (selectedQuantity >
-                                                minSelectedQuantity) {
-                                              setState(() {
-                                                --selectedQuantity;
-                                              });
-                                            }
-                                          }),
+                                          },
+                                        ),
+                                      if (partialReject)
+                                        IconButton(
+                                          padding: EdgeInsets.all(0),
+                                          visualDensity: VisualDensity(
+                                              horizontal: -4.0, vertical: -4.0),
+                                          icon: Icon(Icons.highlight_off),
+                                          onPressed: () {
+                                            //setState(() {
+                                            productOrder.selectedQuantity =
+                                                selectedQuantity.toString();
+                                            //});
+                                            // call the out of stock function
+                                            selectedProductOrders.clear();
+                                            selectedProductOrders
+                                                .add(productOrder.id);
+                                            rejectProductOrdersPartial(
+                                                _con.order.id,
+                                                _con.order.driverId);
+                                          },
+                                        ),
                                     ],
-                                  ),
-                                ),
-                                Row(
-                                  children: [
-                                    if (!partialReject)
-                                      IconButton(
-                                        padding: EdgeInsets.all(0),
-                                        visualDensity: VisualDensity(
-                                            horizontal: -4.0, vertical: -4.0),
-                                        icon: Icon(Icons.shopping_bag),
-                                        onPressed: () {
-                                          //setState(() {
-                                          productOrder.selectedQuantity =
-                                              selectedQuantity.toString();
-                                          //});
-                                          // call the add to bag function
-                                          selectedProductOrders.clear();
-                                          selectedProductOrders
-                                              .add(productOrder.id);
-                                          addToBag(_con.order.id);
-                                        },
-                                      ),
-                                    if (partialReject)
-                                      IconButton(
-                                        padding: EdgeInsets.all(0),
-                                        visualDensity: VisualDensity(
-                                            horizontal: -4.0, vertical: -4.0),
-                                        icon: Icon(Icons.highlight_off),
-                                        onPressed: () {
-                                          //setState(() {
-                                          productOrder.selectedQuantity =
-                                              selectedQuantity.toString();
-                                          //});
-                                          // call the out of stock function
-                                          selectedProductOrders.clear();
-                                          selectedProductOrders
-                                              .add(productOrder.id);
-                                          rejectProductOrdersPartial(
-                                              _con.order.id,
-                                              _con.order.driverId);
-                                        },
-                                      ),
-                                  ],
-                                )
-                                // Checkbox(
-                                //   value: selectedProductOrders.contains(_con.order.productOrders.elementAt(index).id),
-                                //   onChanged: _con.order.orderStatus.id == '1'
-                                //       ? null
-                                //       : (newval) {
-                                //           setState(() {
-                                //             _con.order.productOrders.elementAt(index).selectedQuantity =
-                                //                 selectedQuantity.toString();
-                                //             newval
-                                //                 ? selectedProductOrders.add(_con.order.productOrders.elementAt(index).id)
-                                //                 : selectedProductOrders.remove(_con.order.productOrders.elementAt(index).id);
-                                //           });
-                                //         },
-                                // ),
-                              ],
-                            ),
-                          ],
+                                  )
+                                  // Checkbox(
+                                  //   value: selectedProductOrders.contains(_con.order.productOrders.elementAt(index).id),
+                                  //   onChanged: _con.order.orderStatus.id == '1'
+                                  //       ? null
+                                  //       : (newval) {
+                                  //           setState(() {
+                                  //             _con.order.productOrders.elementAt(index).selectedQuantity =
+                                  //                 selectedQuantity.toString();
+                                  //             newval
+                                  //                 ? selectedProductOrders.add(_con.order.productOrders.elementAt(index).id)
+                                  //                 : selectedProductOrders.remove(_con.order.productOrders.elementAt(index).id);
+                                  //           });
+                                  //         },
+                                  // ),
+                                ],
+                              ),
+                            ],
+                          ),
                         );
                       },
                     );
@@ -1155,7 +1247,10 @@ class _OrderWidgetState extends StateMVC<OrderWidget>
                                     icon: Icon(Icons.edit),
                                     onPressed: () {
                                       print('editPressed');
-                                      if (_con.order.orderStatus.id == '2')
+                                      print(
+                                          "orderstatus id ${_con.order.orderStatus.status}");
+                                      if (_con.order.orderStatus.id == '2' ||
+                                          _con.order.orderStatus.id == '21')
                                         setState(
                                           () {
                                             editPressed = true;

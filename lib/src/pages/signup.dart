@@ -11,7 +11,7 @@ class SignUpWidget extends StatefulWidget {
   _SignUpWidgetState createState() => _SignUpWidgetState();
 }
 
-class _SignUpWidgetState extends StateMVC<SignUpWidget> {
+class _SignUpWidgetState extends StateMVC<SignUpWidget>  {
   UserController _con;
 
   _SignUpWidgetState() : super(UserController()) {
@@ -194,14 +194,14 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
                       ),
                       SizedBox(height: 30),
                       BlockButtonWidget(
-                        text: Text(
+                        text: Text( 
                           S.of(context).register,
                           style:
                               TextStyle(color: Theme.of(context).primaryColor),
                         ),
                         color: Theme.of(context).accentColor,
                         onPressed: () {
-                          _con.register();
+                          _con.register(); 
                         },
                       ),
                       SizedBox(height: 25),

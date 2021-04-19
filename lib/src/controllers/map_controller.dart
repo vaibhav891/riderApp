@@ -19,7 +19,7 @@ class MapController extends ControllerMVC {
   Address currentAddress;
   Set<Polyline> polylines = new Set();
   CameraPosition cameraPosition;
-  MapsUtil mapsUtil = new MapsUtil();
+  MapsUtil mapsUtil = new MapsUtil(); 
   String taxAmount = '0.0';
   String subTotal = '0.0';
   String deliveryFee = '0.0';

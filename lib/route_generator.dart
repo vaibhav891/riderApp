@@ -17,7 +17,7 @@ class RouteGenerator {
   static Route<dynamic> generateRoute(RouteSettings settings) {
     // Getting arguments passed in while calling Navigator.pushNamed
     final args = settings.arguments;
-    switch (settings.name) {
+    switch (settings.name) { 
       case '/Splash':
         return MaterialPageRoute(builder: (_) => SplashScreen());
       case '/SignUp':
@@ -36,7 +36,7 @@ class RouteGenerator {
         return MaterialPageRoute(builder: (_) => SignatureScreen());
       case '/OrderDetails':
         return MaterialPageRoute(builder: (_) => OrderWidget(routeArgument: args as RouteArgument));
-      case '/Notifications':
+      case '/Notifications': 
         return MaterialPageRoute(builder: (_) => NotificationsWidget());
       case '/Languages':
         return MaterialPageRoute(builder: (_) => LanguagesWidget());

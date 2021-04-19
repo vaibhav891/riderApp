@@ -18,7 +18,7 @@ class OrderController extends ControllerMVC {
   }
 
   void listenForOrders({String message}) async {
-    orders.clear();
+    orders.clear(); 
     final Stream<Order> stream = await getOrders();
     stream.listen((Order _order) {
       // int value = _order.productOrders

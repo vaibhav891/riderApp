@@ -28,7 +28,10 @@ class NotificationController extends ControllerMVC {
       ));
     }, onDone: () {
       if (notifications.isNotEmpty) {
-        unReadNotificationsCount = notifications.where((model.Notification _n) => !_n.read ?? false).toList().length;
+        unReadNotificationsCount = notifications
+            .where((model.Notification _n) => !_n.read ?? false)
+            .toList()
+            .length;
       } else {
         unReadNotificationsCount = 0;
       }
@@ -42,7 +45,8 @@ class NotificationController extends ControllerMVC {
 
   Future<void> refreshNotifications() async {
     notifications.clear();
-    listenForNotifications(message: S.of(context).notifications_refreshed_successfuly);
+    listenForNotifications(
+        message: S.of(context).notifications_refreshed_successfuly);
   }
 
   void doMarkAsReadNotifications(model.Notification _notification) async {

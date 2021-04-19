@@ -112,6 +112,6 @@ class _MyAppState extends State<MyApp> {
                         caption: TextStyle(fontSize: 14.0, fontWeight: FontWeight.w300, color: config.Colors().secondDarkColor(0.6), height: 1.2),
                       ),
                     ));
-        });
+        }); 
   }
 }

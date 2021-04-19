@@ -449,9 +449,34 @@ Future getProductFromBarcode(String orderId, String barcode) async {
 //     return -1;
 //   }
 // }
+Future markAsOutOfStockAPI(Map<String, dynamic> reqMap) async {
+  Uri uri = Uri.parse('http://online.ajmanmarkets.ae/api/stock.php');
+
+  try {
+    final client = new http.Client();
+    final response = await client.post(
+      uri,
+      headers: {HttpHeaders.contentTypeHeader: 'application/json'},
+      body: json.encode(reqMap),
+    );
+    String responseBody = response.body;
+    // var responseBody = json.decode(response.body);
+    // print(responseBody);
+    // if (response.body.contains('Success'))
+    //   return 0;
+    // else if (response.body.contains('Already exists'))
+    //   return 1;
+    // else
+    //   return 2;
+    return json.decode(responseBody);
+  } catch (e) {
+    print(CustomTrace(StackTrace.current, message: uri.toString()).toString());
+    return e.toString();
+  }
+}
 
 Future<int> addToBagAPI(Map<String, dynamic> reqMap) async {
-  Uri uri = Uri.parse('http://online.ajmanmarkets.ae/api/addtobag.php');
+  Uri uri = Uri.parse('http://online.ajmanmarkets.ae/api/stock.php');
 
   try {
     final client = new http.Client();
@@ -612,6 +637,14 @@ Future updateItemWeight(
         "weight": itemWeight,
       }),
     );
+    print(
+      json.encode({
+        "order_id": orderId,
+        "product_id": productId,
+        "weight": itemWeight,
+      }),
+    );
+    print(response.statusCode);
     print(response.body);
     if (response.statusCode == 200) {
       if (jsonDecode(response.body)['success'] == 1) {
@@ -623,6 +656,7 @@ Future updateItemWeight(
       return 'Could not fetch data';
   } catch (e) {
     print(CustomTrace(StackTrace.current, message: uri.toString()).toString());
-    return 'Could not fetch data';
+    // return 'Could not fetch data';
+    return e.toString();
   }
 }

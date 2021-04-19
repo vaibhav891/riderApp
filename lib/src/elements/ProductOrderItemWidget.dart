@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:keyboard_visibility/keyboard_visibility.dart';
 import 'package:markets_deliveryboy/src/models/order_status.dart';
-import 'package:markets_deliveryboy/src/repository/order_repository.dart';
-import 'package:markets_deliveryboy/src/repository/user_repository.dart';
 
 import '../helpers/helper.dart';
 import '../models/order.dart';
@@ -32,30 +28,13 @@ class ProductOrderItemWidget extends StatefulWidget {
 }
 
 class _ProductOrderItemWidgetState extends State<ProductOrderItemWidget> {
-  FocusNode myFocusNode = FocusNode();
-  KeyboardVisibilityNotification _keyboardVisibility =
-      new KeyboardVisibilityNotification();
-  int _keyboardVisibilitySubscriberId;
-  TextEditingController _controller = TextEditingController();
-
   @override
   void initState() {
     super.initState();
-
-    _keyboardVisibilitySubscriberId = _keyboardVisibility.addNewListener(
-      onChange: (bool visible) {
-        if (!visible) {
-          myFocusNode.unfocus();
-        }
-      },
-    );
-    _controller.text = widget.productOrder.weightedItem;
   }
 
   @override
   void dispose() {
-    _keyboardVisibility.removeListener(_keyboardVisibilitySubscriberId);
-    _controller.dispose();
     super.dispose();
   }
 
@@ -142,52 +121,6 @@ class _ProductOrderItemWidgetState extends State<ProductOrderItemWidget> {
                       Helper.getOrderPrice(widget.productOrder), context,
                       style: Theme.of(context).textTheme.caption),
                   Text("Bag: ${widget.productOrder.inBagQty ?? 0}"),
-                  if (currentUser.value.role_id == 'picker')
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            focusNode: myFocusNode,
-                            controller: _controller,
-                            textAlign: TextAlign.center,
-                            decoration: InputDecoration(
-                              isDense: true,
-                              contentPadding: EdgeInsets.fromLTRB(4, 4, 4, 4),
-                              border: OutlineInputBorder(),
-                            ),
-                            onSubmitted: (value) async {
-                              widget.productOrder.weightedItem =
-                                  _controller.text;
-                              var weightedTotal = double.parse(
-                                      _controller.text) *
-                                  double.parse(widget.productOrder.quantity);
-                              var message = await updateItemWeight(
-                                  widget.order.id,
-                                  widget.productOrder.product.id,
-                                  weightedTotal.toInt().toString());
-                              print(message);
-                              Fluttertoast.showToast(msg: message);
-                            },
-                          ),
-                        ),
-                        GestureDetector(
-                          onTap: () async {
-                            widget.productOrder.weightedItem = _controller.text;
-                            var weightedTotal = double.parse(_controller.text) *
-                                double.parse(widget.productOrder.quantity);
-                            var message = await updateItemWeight(
-                                widget.order.id,
-                                widget.productOrder.product.id,
-                                weightedTotal.toInt().toString());
-                            print(message);
-                            Fluttertoast.showToast(msg: message);
-                          },
-                          child: Icon(Icons.arrow_circle_up_rounded),
-                        ),
-                      ],
-                    )
                 ],
               ),
             ),

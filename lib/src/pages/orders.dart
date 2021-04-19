@@ -70,11 +70,15 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
         centerTitle: true,
         title: Text(
           S.of(context).orders,
-          style: Theme.of(context).textTheme.headline6.merge(TextStyle(letterSpacing: 1.3)),
+          style: Theme.of(context)
+              .textTheme
+              .headline6
+              .merge(TextStyle(letterSpacing: 1.3)),
         ),
         actions: <Widget>[
           new ShoppingCartButtonWidget(
-              iconColor: Theme.of(context).hintColor, labelColor: Theme.of(context).accentColor),
+              iconColor: Theme.of(context).hintColor,
+              labelColor: Theme.of(context).accentColor),
         ],
       ),
       body: RefreshIndicator(
@@ -110,9 +114,11 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
                             color: Colors.white,
                             fontSize: 14,
                           )),
-                      onPressed: null,
-                      color: pressAttention1 ? Color(0xff0068b2) : Colors.orange,
-                      // onPressed: () => dosomething("Express"),
+
+                      //// onPressed: null,
+                      color:
+                          pressAttention1 ? Color(0xff0068b2) : Colors.orange,
+                      onPressed: () => dosomething("Express"),
 
                       // color: Theme.of(context).accentColor,
                       //               disabledColor: Colors.blue,//add this to your code
@@ -130,7 +136,8 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
                               color: Colors.white,
                               fontSize: 14,
                             )),
-                        color: pressAttention1 ? Color(0xff0068b2) : Colors.orange,
+                        color:
+                            pressAttention1 ? Color(0xff0068b2) : Colors.orange,
                         onPressed: () => dosomething("Return"),
                       ),
                     ),
