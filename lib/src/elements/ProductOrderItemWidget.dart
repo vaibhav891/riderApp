@@ -96,7 +96,7 @@ class _ProductOrderItemWidgetState extends State<ProductOrderItemWidget> {
               ),
             ),
             SizedBox(
-              width: MediaQuery.of(context).size.width * 0.24,
+              width: MediaQuery.of(context).size.width * 0.25,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
@@ -106,9 +106,13 @@ class _ProductOrderItemWidgetState extends State<ProductOrderItemWidget> {
                       style: Theme.of(context).textTheme.subtitle1,
                       children: [
                         TextSpan(
-                          text: double.tryParse(widget.productOrder.quantity)
-                                  ?.toStringAsFixed(0) ??
-                              0,
+                          text: widget.productOrder.weightedItem != "0"
+                              ? double.tryParse(widget.productOrder.quantity)
+                                      ?.toStringAsFixed(0) +
+                                  "(${(double.parse(widget.productOrder.quantity) * double.parse(widget.productOrder.weightedItem)).toStringAsFixed(0)})"
+                              : double.tryParse(widget.productOrder.quantity)
+                                      ?.toStringAsFixed(0) ??
+                                  0,
                           style: Theme.of(context)
                               .textTheme
                               .headline1
@@ -120,6 +124,8 @@ class _ProductOrderItemWidgetState extends State<ProductOrderItemWidget> {
                   Helper.getPrice(
                       Helper.getOrderPrice(widget.productOrder), context,
                       style: Theme.of(context).textTheme.caption),
+                  if (widget.productOrder.weightedItem != "0")
+                    Text("${widget.productOrder.weightedItem}"),
                   Text("Bag: ${widget.productOrder.inBagQty ?? 0}"),
                 ],
               ),

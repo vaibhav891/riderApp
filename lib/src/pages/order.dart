@@ -411,8 +411,10 @@ class _OrderWidgetState extends StateMVC<OrderWidget>
     }
     final CustomDialogHandler _customDialogHandler = CustomDialogHandler();
     _customDialogHandler.show(context);
+
     await _con.addProductsToBag(
         getSelectedProductOrders()?.map((e) => e)?.toList(), orderId);
+
     _customDialogHandler.hide();
     // int value = _con.order.productOrders.fold<int>(
     //     0,
@@ -1155,6 +1157,11 @@ class _OrderWidgetState extends StateMVC<OrderWidget>
                                                   }
                                                 ]
                                               };
+                                              final CustomDialogHandler
+                                                  _customDialogHandler =
+                                                  CustomDialogHandler();
+                                              _customDialogHandler
+                                                  .show(context);
                                               var message =
                                                   await markAsOutOfStockAPI(
                                                       reqMap);
@@ -1162,12 +1169,18 @@ class _OrderWidgetState extends StateMVC<OrderWidget>
                                                 if (message['success'] == 1)
                                                   productOrder.inBagQty =
                                                       double.parse(
-                                                              message['bag'])
+                                                              message['bag']
+                                                                  .toString())
                                                           .toInt();
                                                 message = message['message'];
                                               }
-                                              Fluttertoast.showToast(
-                                                  msg: message);
+
+                                              _customDialogHandler.hide();
+                                              _con.scaffoldKey?.currentState
+                                                  ?.showSnackBar(SnackBar(
+                                                      content: Text(message)));
+                                              // Fluttertoast.showToast(
+                                              //     msg: message);
                                             } else {
                                               //setState(() {
                                               productOrder.selectedQuantity =
@@ -1177,6 +1190,7 @@ class _OrderWidgetState extends StateMVC<OrderWidget>
                                               selectedProductOrders.clear();
                                               selectedProductOrders
                                                   .add(productOrder.id);
+
                                               addToBag(_con.order.id);
                                             }
                                           },

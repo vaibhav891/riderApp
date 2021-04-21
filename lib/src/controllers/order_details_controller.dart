@@ -192,28 +192,27 @@ class OrderDetailsController extends ControllerMVC {
       'order_id': orderId,
       'item': itemMapList,
     };
-    int responseId = await addToBagAPI(reqMap);
+    Map response = await addToBagAPI(reqMap);
+    int responseId = response['id'];
     if (responseId == 0) {
       print(
           '${productOrdersList?.map((e) => e.toMap())?.toList()} added to bag');
       setState(() {
         productOrdersList.forEach((e) {
-          // _con.order.productOrders.remove(e);
-          e.inBagQty = double.parse(e.selectedQuantity).toInt();
-          e.outOfStockQnty = double.parse(e.quantity).toInt() -
-              double.parse(e.selectedQuantity).toInt();
+          // e.inBagQty = double.parse(e.selectedQuantity).toInt();
+          e.inBagQty = response['qty'];
+          e.outOfStockQnty = double.parse(e.quantity).toInt() - e.inBagQty;
+          // double.parse(e.selectedQuantity).toInt();
           e.selectedQuantity = '0.0';
-          //e.quantity = '0';
         });
       });
       scaffoldKey?.currentState?.showSnackBar(SnackBar(
-        content: Text('Added to bag successfully!'),
+        content: Text(response['message']),
       ));
       return true;
     } else {
       scaffoldKey?.currentState?.showSnackBar(SnackBar(
-        content: Text(
-            responseId == 1 ? 'Already Exists' : 'Could not be added to bag!'),
+        content: Text(response['message']),
       ));
       productOrdersList.forEach((e) {
         e.selectedQuantity = '0.0';

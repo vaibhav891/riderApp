@@ -20,6 +20,7 @@ class ProductOrder {
   String deliveryDate;
   String weightedItem;
   bool scaleItem;
+  String unit;
 
   ProductOrder(
       {this.id,
@@ -39,7 +40,8 @@ class ProductOrder {
       this.selectedQuantity,
       this.deliveryDate,
       this.weightedItem,
-      this.scaleItem});
+      this.scaleItem,
+      this.unit});
 
   ProductOrder.fromJSON(Map<String, dynamic> jsonMap) {
     try {
@@ -82,6 +84,7 @@ class ProductOrder {
               ? true
               : false
           : false;
+      unit = jsonMap['unit'] != null ? jsonMap['unit'] : "";
     } catch (e) {
       isScanned = false;
       id = '';
@@ -100,6 +103,7 @@ class ProductOrder {
       deliveryDate = '';
       weightedItem = '';
       scaleItem = false;
+      unit = '';
       print(e);
     }
   }
@@ -122,6 +126,7 @@ class ProductOrder {
     map["delivery_date"] = deliveryDate;
     map["weighted_item"] = weightedItem;
     map["scale_item"] = scaleItem;
+    map["unit"] = unit;
     return map;
   }
 }

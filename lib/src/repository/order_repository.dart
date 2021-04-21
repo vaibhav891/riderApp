@@ -412,43 +412,12 @@ Future getProductFromBarcode(String orderId, String barcode) async {
       // ),
     );
     return json.decode(response.body)['data'];
-
-    // final streamedRest = await client.send(http.Request('get', uri));
-    // return streamedRest.stream
-    //     .transform(utf8.decoder)
-    //     .transform(json.decoder)
-    //     .map((data) => Helper.getData(data))
-    //     .expand((data) => (data as List))
-    //     .map((data) {
-    //   return data;
-    // });
   } catch (e) {
     print(CustomTrace(StackTrace.current, message: uri.toString()).toString());
     return null;
   }
 }
 
-// Future<int> markAsOutOfStockAPI(Map<String, dynamic> reqMap) async {
-//   Uri uri = Uri.parse('http://online.ajmanmarkets.ae/api/stock.php');
-
-//   try {
-//     final client = new http.Client();
-//     final response = await client.post(
-//       uri,
-//       headers: {HttpHeaders.contentTypeHeader: 'application/json'},
-//       body: json.encode(reqMap),
-//     );
-//     if (response.body.contains('Success'))
-//       return 0;
-//     else if (response.body.contains('Already exists'))
-//       return 1;
-//     else
-//       return 2;
-//   } catch (e) {
-//     print(CustomTrace(StackTrace.current, message: uri.toString()).toString());
-//     return -1;
-//   }
-// }
 Future markAsOutOfStockAPI(Map<String, dynamic> reqMap) async {
   Uri uri = Uri.parse('http://online.ajmanmarkets.ae/api/stock.php');
 
@@ -460,14 +429,6 @@ Future markAsOutOfStockAPI(Map<String, dynamic> reqMap) async {
       body: json.encode(reqMap),
     );
     String responseBody = response.body;
-    // var responseBody = json.decode(response.body);
-    // print(responseBody);
-    // if (response.body.contains('Success'))
-    //   return 0;
-    // else if (response.body.contains('Already exists'))
-    //   return 1;
-    // else
-    //   return 2;
     return json.decode(responseBody);
   } catch (e) {
     print(CustomTrace(StackTrace.current, message: uri.toString()).toString());
@@ -475,7 +436,7 @@ Future markAsOutOfStockAPI(Map<String, dynamic> reqMap) async {
   }
 }
 
-Future<int> addToBagAPI(Map<String, dynamic> reqMap) async {
+Future addToBagAPI(Map<String, dynamic> reqMap) async {
   Uri uri = Uri.parse('http://online.ajmanmarkets.ae/api/stock.php');
 
   try {
@@ -485,16 +446,23 @@ Future<int> addToBagAPI(Map<String, dynamic> reqMap) async {
       headers: {HttpHeaders.contentTypeHeader: 'application/json'},
       body: json.encode(reqMap),
     );
-//    if (response.body.contains('Success') || response.body.contains('success'))
-    if (response.statusCode == 200)
-      return 0;
-    // else if (response.body.contains('Already exists'))
-    //   return 1;
-    else
-      return 2;
+    print("  resp " + (response.body));
+    if (response.statusCode == 200 &&
+        response.body.contains('success') &&
+        json.decode(response.body)['success'] == 1) {
+      return {
+        "id": 0,
+        "message": json.decode(response.body)['message'],
+        "qty": json.decode(response.body)['bag']
+      };
+    } else
+      return {
+        "id": 2,
+        "message": json.decode(response.body)['message'].toString()
+      };
   } catch (e) {
     print(CustomTrace(StackTrace.current, message: uri.toString()).toString());
-    return -1;
+    return {"id": -1, "message": e.toString()};
   }
 }
 

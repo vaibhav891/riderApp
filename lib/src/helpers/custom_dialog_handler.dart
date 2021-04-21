@@ -8,7 +8,10 @@ class CustomDialogHandler {
         context: context,
         builder: (dialogContext) {
           _dismissingContext = dialogContext;
-          return Center(child: CircularProgressIndicator());
+          return Center(
+              child: CircularProgressIndicator(
+            valueColor: new AlwaysStoppedAnimation<Color>(Colors.orange),
+          ));
         });
   }
 
